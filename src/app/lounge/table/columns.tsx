@@ -167,7 +167,7 @@ export const columns: ColumnDef<stockIn>[] = [
       if(status == 'ORDER'){
         return <div><Badge variant='destructive'>{status}</Badge></div>
       }else{
-        return <div><Badge>{status}</Badge></div>
+        return <div><Badge className='text-white'>{status}</Badge></div>
       }
     }
   },
