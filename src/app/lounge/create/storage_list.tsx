@@ -46,7 +46,7 @@ export function StorageDrawerDialog() {
           <DialogHeader>
             <DialogTitle>Storage Data</DialogTitle>
             <DialogDescription>
-              Choose storage item to order here. Click save when you're done.
+              Choose storage item to order here. Click save when you are done.
             </DialogDescription>
           </DialogHeader>
           <StorageData />
@@ -64,7 +64,7 @@ export function StorageDrawerDialog() {
         <DrawerHeader className="text-left">
           <DrawerTitle>Storage Data</DrawerTitle>
           <DrawerDescription>
-          Choose storage item to order here. Click save when you're done.
+          Choose storage item to order here. Click save when you re done.
           </DrawerDescription>
         </DrawerHeader>
         <StorageData className="px-4" />

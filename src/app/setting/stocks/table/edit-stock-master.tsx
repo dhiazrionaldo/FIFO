@@ -153,7 +153,7 @@ export function EditStockMaster({ stockMaster, isOpen, onOpenChange }: Props) {
         <SheetHeader>
           <SheetTitle>Edit Stock Master</SheetTitle>
           <SheetDescription>
-            Make changes to your Stock Master settings here. Click save when you're done.
+            Make changes to your Stock Master settings here. Click save when you are done.
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">

@@ -121,7 +121,7 @@ export function CreateStockMaster() {
         <SheetHeader>
           <SheetTitle>Create new Stock Master</SheetTitle>
           <SheetDescription>
-            Make changes to your stock master settings here. Click save when you're done.
+            Make changes to your stock master settings here. Click save when you are done.
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">

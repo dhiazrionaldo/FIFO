@@ -146,7 +146,7 @@ export function EditStockOut({ stockIns, isOpen, onOpenChange }: Props) {
         <SheetHeader>
           <SheetTitle>Stock Out</SheetTitle>
           <SheetDescription>
-            Make changes to your stock data here. Click save when you're done.
+            Make changes to your stock data here. Click save when you are done.
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">

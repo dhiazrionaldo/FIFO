@@ -76,7 +76,7 @@ export function EditSKU({ sku, isOpen, onOpenChange }: Props) {
         <SheetHeader>
           <SheetTitle>Edit SKU</SheetTitle>
           <SheetDescription>
-            Make changes to your SKU settings here. Click save when you're done.
+            Make changes to your SKU settings here. Click save when you are done.
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
