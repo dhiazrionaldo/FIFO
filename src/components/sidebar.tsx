@@ -9,6 +9,7 @@ import {
   Home,
   LineChartIcon,
   List,
+  ListOrderedIcon,
   LogOut,
   Mail,
   MoreHorizontal,
@@ -17,6 +18,7 @@ import {
   PackageOpen,
   Settings,
   Soup,
+  TimerReset,
   User,
   Users,
 } from 'lucide-react';
@@ -33,11 +35,12 @@ import { SidebarMobile } from './sidebar-mobile';
 const sidebarItems: SidebarItems = {
   links: [
     { label: 'Dashboard', href: '/home', icon: LineChartIcon },
-    { label: 'Storage Stock', href: '/storage', icon: Package },
-    { label: 'Order Storage', href: '/lounge', icon: PackageOpen },
+    { label: 'Storage Stocks', href: '/storage', icon: Package },
+    { label: 'Lounge Stocks', href: '/lounge', icon: PackageOpen },
+    { label: 'Order', href: '/order', icon: ListOrderedIcon },
     {
       href: '/history',
-      icon: List,
+      icon: TimerReset,
       label: 'Transaction History',
     },
   ],

@@ -12,10 +12,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { EditLoungeOrder } from "./edit-stockIn"
+import { EditStockIn } from "./edit-stockIn"
 import { DeleteStockIn } from "./delete-stockIn"
 import { EditStockOut } from "./edit-stockOut"
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export const maxDuration = 60;
 
@@ -39,6 +39,30 @@ export type stockIn = {
 
 export const columns: ColumnDef<stockIn>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     accessorKey: "item_name",
     header: ({column}) =>{
         return(
@@ -52,6 +76,10 @@ export const columns: ColumnDef<stockIn>[] = [
   {
     accessorKey: "category_name",
     header: "Category",
+  },
+  {
+    accessorKey: "kode_sku",
+    header: "SKU",
   },
   {
     accessorKey: "qty",
@@ -87,7 +115,7 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "date_in",
     header: ({column}) =>{
       return(
-          <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "asc")}>
+          <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "desc")}>
               Transaction Date
               <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
@@ -112,7 +140,7 @@ export const columns: ColumnDef<stockIn>[] = [
 
       return <div>{formattedDate}</div>
     }
-  },
+  },  
   // {
   //   accessorKey: "created_by",
   //   header: "Created By",
@@ -130,30 +158,33 @@ export const columns: ColumnDef<stockIn>[] = [
   //       return <div>{formattedDate}</div>
   //   }
   // },
-  {
-    accessorKey: "modified_by",
-    header: "Modified By",
-  },
-  {
-    accessorKey: "modified_datetime",
-    header: "Modified Date",
-    cell: ({row}) =>{
-      const date = new Date(row.getValue('modified_datetime'));
+  // {
+  //   accessorKey: "modified_by",
+  //   header: "Modified By",
+  // },
+  // {
+  //   accessorKey: "modified_datetime",
+  //   header: "Modified Date",
+  //   cell: ({row}) =>{
+  //     const dateValue = row.getValue('modified_datetime');
 
-      // Define an array of month abbreviations
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-      // Extract day, month, and year
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-      const year = date.getUTCFullYear();
+  //     const date = new Date(row.getValue('modified_datetime'));
 
-      // Format as dd mm yyyy
-      const formattedDate = `${day} ${month} ${year}`;
+  //     // Define an array of month abbreviations
+  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-      return <div>{formattedDate}</div>
-    }
-  },
+  //     // Extract day, month, and year
+  //     const day = String(date.getUTCDate()).padStart(2, '0');
+  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
+  //     const year = date.getUTCFullYear();
+
+  //     // Format as dd mm yyyy
+  //     const formattedDate = `${day} ${month} ${year}`;
+
+  //     return <div>{formattedDate}</div>
+  //   }
+  // },
   {
     id: "actions",
     cell: ({ row }) => {
@@ -176,14 +207,14 @@ export const columns: ColumnDef<stockIn>[] = [
             </DropdownMenuItem>
             {/* <DropdownMenuItem onSelect={() => setSheetOpenStockOut(true)}>
                 <PackageOpen className="mr-2" size={18} />Stock Out
-            </DropdownMenuItem> */}
-            {/* <DropdownMenuItem><DeleteStockIn id={stockIns.id} /></DropdownMenuItem> */}
+            </DropdownMenuItem>
+            <DropdownMenuItem><DeleteStockIn id={stockIns.id} /></DropdownMenuItem>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuItem onClick={() => navigator.clipboard.writeText(stockIns.id)}>
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(stockIns.id)}>
                 Copy Stock In ID
             </DropdownMenuItem> */}
             </DropdownMenuContent>
-            <EditLoungeOrder stockIns={stockIns} selectedItemId={stockIns.item_id}  isOpen={isSheetOpen} onOpenChange={setSheetOpen} />
+            <EditStockIn stockIns={stockIns} selectedItemId={stockIns.item_id} isOpen={isSheetOpen} onOpenChange={setSheetOpen} />
             {/* <EditStockOut stockIns={stockIns} isOpen={isSheetOpenStockOut} onOpenChange={setSheetOpenStockOut} /> */}
         </DropdownMenu>
       )

@@ -24,11 +24,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { CreateStockIn } from "./create-stockIn"
-import { CheckCircle2, CirclePlus, SaveIcon } from "lucide-react"
+import { CirclePlus, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { DataTablePagination } from "./data-table-pagination"
-import { DrawerClose } from "@/components/ui/drawer"
-import { useSelectedRow } from '@/app/order/selected-row-provider';
 
 export const maxDuration = 60;
 
@@ -43,8 +41,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [selectedRows, setSelectedRow] = React.useState<any[]>([]);
-  const { setSelectedRows } = useSelectedRow();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const table = useReactTable({
     data,
@@ -60,15 +57,9 @@ export function DataTable<TData, TValue>({
         columnFilters,
     }
   })
-  const handleGetSelectedRows = () => {
-    const selectedRowData = table.getSelectedRowModel().rows.map(row => row.original);
-    setSelectedRow(selectedRowData);
-    setSelectedRows(selectedRowData);
-
-  };
 
   return (
-    <>  
+    <>
         <div className="flex items-center py-4">
             <Input
             placeholder="Search item name..."
@@ -78,12 +69,15 @@ export function DataTable<TData, TValue>({
             }
             className="max-w mr-2"
             />
-            <DrawerClose asChild>
-              <Button className='text-white max-w-[200px]' type='submit' onClick={handleGetSelectedRows}>
-                <CheckCircle2 className="mr-2 capitalize"/> SUBMIT
+            {/* <CreateStockIn /> */}
+            {isLoading ? (
+              <Loader2 className='animate-spin' />
+            ) : (
+              <Button className="text-white" asChild>
+                <Link href="/lounge/create" onLoad={() => {setIsLoading(true)}}><CirclePlus className="mr-2" />Add new Order</Link>
               </Button>
-            </DrawerClose>
-            
+            )}
+
         </div>
         <div className="rounded-md border">
         <Table>

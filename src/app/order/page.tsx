@@ -38,7 +38,7 @@ export default function LoungePage(){
       };
 
       // API call to get stock data
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/lounge`, { params });
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/order`, { params });
       setData(res.data.items);
       console.log(res.data.items) 
     } catch (error) {
@@ -53,7 +53,7 @@ export default function LoungePage(){
   },[]);
     return(
       <div>
-          <h1 className="text-3xl font-semibold capitalize">Lounge</h1>
+          <h1 className="text-3xl font-semibold capitalize">Lounge Order Transaction</h1>
           <div className="flex flex-center gap-2 m-3">
               <DatePickerWithRange date={dateRange} setDate={setDateRange} />
               <Button className="text-white" onClick={getStockInData}>{loading? <Loader2 className="animate-spin"/> : <Search />}</Button>

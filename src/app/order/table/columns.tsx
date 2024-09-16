@@ -58,6 +58,10 @@ export const columns: ColumnDef<stockIn>[] = [
     header: "Qty",
   },
   {
+    accessorKey: "deliver_qty",
+    header: "Delivered Qty",
+  },
+  {
     accessorKey: "unit_price",
     header: "Unit Price",
     cell: ({row}) =>{
@@ -84,20 +88,20 @@ export const columns: ColumnDef<stockIn>[] = [
     }
   },
   {
-    accessorKey: "date_in",
+    accessorKey: "order_date",
     header: ({column}) =>{
       return(
           <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "asc")}>
-              Transaction Date
+              Order Date
               <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
       )
     },
     cell: ({row}) =>{
-      const dateValue = row.getValue('date_in');
+      const dateValue = row.getValue('order_date');
 
 
-      const date = new Date(row.getValue('date_in'));
+      const date = new Date(row.getValue('order_date'));
 
       // Define an array of month abbreviations
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -152,6 +156,19 @@ export const columns: ColumnDef<stockIn>[] = [
       const formattedDate = `${day} ${month} ${year}`;
 
       return <div>{formattedDate}</div>
+    }
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell:({row}) => {
+      const status = new String(row.getValue('status'))
+      
+      if(status == 'ORDER'){
+        return <div><Badge variant='destructive'>{status}</Badge></div>
+      }else{
+        return <div><Badge className='text-white'>{status}</Badge></div>
+      }
     }
   },
   {
