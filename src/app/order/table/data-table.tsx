@@ -74,7 +74,7 @@ export function DataTable<TData, TValue>({
               <Loader2 className='animate-spin' />
             ) : (
               <Button className="text-white" asChild>
-                <Link href="/lounge/create" onLoad={() => {setIsLoading(true)}}><CirclePlus className="mr-2" />Add new Order</Link>
+                <Link href="/order/create" onLoad={() => {setIsLoading(true)}}><CirclePlus className="mr-2" />Add new Order</Link>
               </Button>
             )}
 

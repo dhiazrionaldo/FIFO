@@ -49,7 +49,7 @@ const LoungeorderPage = () => {
                         toast.error(er);
                        })
                        .finally(()=>{
-                        router.push('/lounge')
+                        router.push('/order')
                        });
         } catch (error) {
             toast.error('Failed to add Order! Please try again later')
@@ -90,7 +90,7 @@ const LoungeorderPage = () => {
         return (
           <div>
             <div className='flex flex-row gap-3'>
-                <Link href='/lounge'>
+                <Link href='/order'>
                 <Button variant='outline'><ArrowLeft className='gap-2' />Back</Button>
                 </Link>
                 <h1 className="text-3xl font-semibold capitalize">Create Order</h1>

@@ -40,7 +40,6 @@ export default function LoungePage(){
       // API call to get stock data
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/order`, { params });
       setData(res.data.items);
-      console.log(res.data.items) 
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {

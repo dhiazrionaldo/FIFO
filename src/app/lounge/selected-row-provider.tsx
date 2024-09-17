@@ -3,17 +3,17 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 // Define the type for selected rows
-type SelectedRowContextType = {
+type SelectedRowContextsType = {
   selectedRows: any[];
   setSelectedRows: (rows: any[]) => void;
 };
 
 // Create context
-const SelectedRowContext = createContext<SelectedRowContextType | undefined>(undefined);
+const SelectedRowContexts = createContext<SelectedRowContextsType | undefined>(undefined);
 
 // Custom hook to use the context
 export const useSelectedRow = () => {
-  const context = useContext(SelectedRowContext);
+  const context = useContext(SelectedRowContexts);
   if (!context) {
     throw new Error('useSelectedRow must be used within a SelectedRowProvider');
   }
@@ -21,12 +21,12 @@ export const useSelectedRow = () => {
 };
 
 // Provider component
-export const SelectedRowProvider = ({ children }: { children: ReactNode }) => {
+export const SelectedRowProviders = ({ children }: { children: ReactNode }) => {
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
   return (
-    <SelectedRowContext.Provider value={{ selectedRows, setSelectedRows }}>
+    <SelectedRowContexts.Provider value={{ selectedRows, setSelectedRows }}>
       {children}
-    </SelectedRowContext.Provider>
+    </SelectedRowContexts.Provider>
   );
 };

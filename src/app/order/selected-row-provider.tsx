@@ -23,6 +23,7 @@ export const useSelectedRow = () => {
 // Provider component
 export const SelectedRowProvider = ({ children }: { children: ReactNode }) => {
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
+  console.log('selectedrowprovider rendered')
 
   return (
     <SelectedRowContext.Provider value={{ selectedRows, setSelectedRows }}>

@@ -54,6 +54,10 @@ export const columns: ColumnDef<stockIn>[] = [
     header: "Category",
   },
   {
+    accessorKey: "kode_sku",
+    header: "SKU Code",
+  },
+  {
     accessorKey: "qty",
     header: "Qty",
   },
