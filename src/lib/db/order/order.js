@@ -166,18 +166,30 @@ export async function deliverOrder(item){
         const {id, storage_id, qty, item_id, unit_price, created_by} = item;
         const currentQty = await pool.request()
                                      .input('id', sql.Int, id)
-                                     .query(`SELECT qty FROM dbo.[order]`);
+                                     .query(`SELECT id, qty FROM dbo.[order]`);
         const beforeQty = currentQty.recordset[0]?.qty;
-        
+        const order_id = currentQty.recordset[0]?.id;
+
         const result = await pool.request()
                                         .input('qty', sql.Int, qty)
                                         .input('item_id', sql.Int, item_id)
                                         .input('created_by', sql.NVarChar, created_by)
                                         .input('unit_price', sql.Int, unit_price)
                                         .input('storage_id', sql.Int, storage_id)
-                                        .query(`INSERT INTO dbo.lounge_stocks (item_id, storage_id, total_price, date_in, qty, created_by, created_datetime)
-                                                OUTPUT INSERTED.id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
-                                                VALUES (@item_id, @storage_id, (@unit_price * @qty), SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
+                                        .input('order_id', sql.Int, order_id)
+                                        .query(`INSERT INTO dbo.lounge_stocks (item_id, storage_id, order_id, total_price, date_in, qty, created_by, created_datetime)
+                                                OUTPUT INSERTED.id, INSERTED.order_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
+                                                VALUES (@item_id, @storage_id, @order_id, (@unit_price * @qty), SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
+
+        const loungeId = result.recordset[0].id;
+        const transactionDateTime = result.recordset[0].date_in;
+        const transactionQty = result.recordset[0].qty;
+        const createdBy = result.recordset[0].created_by;
+        const createdDateTime = result.recordset[0].created_datetime;
+
+        console.log('loungeId: ', loungeId)
+        console.log('orderId: ', order_id)
+
         await pool.request()
                             .input('id', sql.Int, id)
                             .input('storage_id', sql.Int, storage_id)
@@ -206,22 +218,18 @@ export async function deliverOrder(item){
                                                 total_price = (@unit_price * @qty)
                                     WHERE id = @storage_id`)
 
-        const stockInId = result.recordset[0].id;
-        const transactionDateTime = result.recordset[0].date_in;
-        const transactionQty = result.recordset[0].qty;
-        const createdBy = result.recordset[0].created_by;
-        const createdDateTime = result.recordset[0].created_datetime;
+        
                                 
         await pool.request()
-                            .input('stock_in_id', sql.Int, stockInId)
+                            .input('lounge_id', sql.Int, loungeId)
                             .input('transaction_date', sql.DateTime, transactionDateTime)
                             .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
                             .input('transaction_qty', sql.Int, transactionQty)
                             .input('created_by', sql.NVarChar, createdBy)
                             .input('created_datetime', sql.DateTime, createdDateTime)
                             .input('before_qty', sql.Int, beforeQty)
-                            .query(`INSERT INTO dbo.transaction_history (stock_in_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
-                                    VALUES (@stock_in_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+                            .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+                                    VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
         
         return result.recordset;
     } catch (error) {

@@ -12,10 +12,6 @@ export const metadata: Metadata = {
   description: "Inventory Management",
 };
 
-export const viewport: Viewport = {
-  initialScale: 67
-}
-
 export default function RootLayout({
   children,
 }: Readonly<{

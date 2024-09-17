@@ -91,6 +91,18 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "current_qty",
     header: "Current Qty",
   },
+  {
+    accessorKey: "storage_qty",
+    header: "Storage Qty",
+  },
+  {
+    accessorKey: "order_qty",
+    header: "Order Qty",
+  },
+  {
+    accessorKey: "lounge_qty",
+    header: "Lounge Qty",
+  },
   // {
   //   accessorKey: "created_by",
   //   header: "Created By",
