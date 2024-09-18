@@ -114,7 +114,7 @@ export default function StoragePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-1 gap-2">
         <div className="col-span-1 md:col-span-3 row-span-2">
           <div className="grid items-start gap-2">
-            <h1 className="text-xl md:text-3xl font-semibold capitalize">Storage</h1>
+            <h1 className="text-xl md:text-3xl font-semibold">Storage</h1>
             <div className="flex flex-col md:flex-row flex-center gap-2 m-3">
               <DatePickerWithRange date={dateRange} setDate={setDateRange} />
               <Button className="text-white" onClick={getStockInData}>

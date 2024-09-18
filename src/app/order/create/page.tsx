@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ListCheck, MinusCircleIcon, PlusCircleIcon } from 'lucide-react';
+import { ArrowLeft, ListCheck, Loader2, MinusCircleIcon, PlusCircleIcon } from 'lucide-react';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { StorageDrawerDialog } from '@/app/order/create/storage_list';
@@ -24,11 +24,13 @@ const LoungeorderPage = () => {
   const { user } = useUser();
   const username = user?.username;
   const router = useRouter();
+  const [isLoading, setLoading] = useState(false);
+  
 
   // Submit Order
   async function submitOrder() {
     let isExceed = false;
-
+    setLoading(true);
     // Validate topQty with storage qty before submission
     const updatedRows = formattedRows.map((row, index) => {
       if (parseInt(topQty) > row.qty) {
@@ -46,11 +48,12 @@ const LoungeorderPage = () => {
 
     // If there's any exceeded qty, don't submit the order
     if (isExceed) return;
-
+    setLoading(false);
     // Submit the order if no validation errors
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/order`, updatedRows)
         .then(() => {
+          setLoading(false);
           toast.success('Success Add Lounge Order!');
         })
         .finally(() => {
@@ -115,17 +118,22 @@ const LoungeorderPage = () => {
               </Button>
             </div>
           </div>
-
-          <Button className='text-white gap-3' onClick={submitOrder}>
-            <ListCheck className='w-5 h-5' />ORDER
-          </Button>
+          
+          {isLoading ? (
+            <Loader2 className='animate-spin h-5 w-5'/>
+          ) : (
+            <Button className='text-white gap-3' onClick={submitOrder}>
+                <ListCheck className='w-5 h-5' />ORDER
+            </Button>
+          )}
+          
         </div>
 
         {formattedRows.length > 0 ? (
           formattedRows.map((row, index) => (
             <Card 
               key={index}
-              className={`mx-2 my-2 py-4 px-4 text-white w-full ${index === exceedIndex ? 'animate-bounce exceed-card' : ''}`}
+              className={`mx-2 my-2 py-4 px-4 text-white w-full ${index === exceedIndex ? 'animate-pulse duration-90 bg-gray-700 text-white exceed-card' : ''}`}
             >
               <CardTitle className='mb-4 text-xl font-bold'>SKU No : {row.kode_sku}</CardTitle>
               <CardContent className="grid grid-cols-2 gap-6">
