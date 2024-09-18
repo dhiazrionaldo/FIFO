@@ -11,6 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
+import { Badge } from '@/components/ui/badge';
 
 export const maxDuration = 60;
 
@@ -32,7 +33,11 @@ export type stockIn = {
   modified_datetime: string
 }
 
-export const columns: ColumnDef<stockIn>[] = [
+export const columns: ColumnDef<stockIn>[] = [  
+  {
+    accessorKey: "kode_sku",
+    header: "SKU Code",
+  }, 
   {
     accessorKey: "item_name",
     header: ({column}) =>{
@@ -78,6 +83,18 @@ export const columns: ColumnDef<stockIn>[] = [
   {
     accessorKey: "transaction_type",
     header: "Transaction Type",
+    cell:({row}) => {
+      const status = new String(row.getValue('transaction_type'))
+      
+      if(status == 'DELIVER TO LOUNGE'){
+        return <div><Badge variant='destructive'>{status}</Badge></div>
+      } else if(status =='LOUNGE ORDER'){
+        return <div><Badge className='text-white bg-yellow-400'>{status}</Badge></div>
+      }
+      else{
+        return <div><Badge className='text-white'>{status}</Badge></div>
+      }
+    }
   },  
   {
     accessorKey: "before_qty",
@@ -86,10 +103,6 @@ export const columns: ColumnDef<stockIn>[] = [
   {
     accessorKey: "transaction_qty",
     header: "Transaction Qty",
-  },
-  {
-    accessorKey: "current_qty",
-    header: "Current Qty",
   },
   {
     accessorKey: "storage_qty",
@@ -103,33 +116,6 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "lounge_qty",
     header: "Lounge Qty",
   },
-  // {
-  //   accessorKey: "created_by",
-  //   header: "Created By",
-  // },
-  // {
-  //   accessorKey: "created_datetime",
-  //   header: "Created Date",
-  //   cell: ({row}) =>{
-  //     const dateValue = row.getValue('created_datetime');
-
-
-  //     const date = new Date(row.getValue('created_datetime'));
-
-  //     // Define an array of month abbreviations
-  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  //     // Extract day, month, and year
-  //     const day = String(date.getUTCDate()).padStart(2, '0');
-  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-  //     const year = date.getUTCFullYear();
-
-  //     // Format as dd mm yyyy
-  //     const formattedDate = `${day} ${month} ${year}`;
-
-  //     return <div>{formattedDate}</div>
-  //   }
-  // },
   {
     accessorKey: "modified_by",
     header: "Modified By",
@@ -157,123 +143,4 @@ export const columns: ColumnDef<stockIn>[] = [
       return <div>{formattedDate}</div>
     }
   },
-  // {
-  //   accessorKey: "item_name",
-  //   header: ({column}) =>{
-  //       return(
-  //           <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "asc")}>
-  //               Item Name
-  //               <ArrowUpDown className="ml-2 h-4 w-4" />
-  //           </Button>
-  //       )
-  //   },
-  // },
-  // {
-  //   accessorKey: "category_name",
-  //   header: "Category",
-  // },
-  // {
-  //   accessorKey: "qty",
-  //   header: "Qty",
-  // },
-  // {
-  //   accessorKey: "unit_price",
-  //   header: "Unit Price",
-  //   cell: ({row}) =>{
-  //     const formattedCurrency = new Intl.NumberFormat('id-ID', {
-  //       style: 'currency',
-  //       currency: 'IDR',
-  //       minimumFractionDigits: 0,
-  //     }).format(row.original.unit_price);
-      
-  //     return <span>{formattedCurrency}</span>;
-  //   }
-  // },
-  // {
-  //   accessorKey: "total_price",
-  //   header: "Total Price",
-  //   cell: ({row}) =>{
-  //     const formattedCurrency = new Intl.NumberFormat('id-ID', {
-  //       style: 'currency',
-  //       currency: 'IDR',
-  //       minimumFractionDigits: 0,
-  //     }).format(row.original.total_price);
-      
-  //     return <span>{formattedCurrency}</span>;
-  //   }
-  // },
-  // {
-  //   accessorKey: "transaction_date",
-  //   header: ({column}) =>{
-  //     return(
-  //         <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "asc")}>
-  //             Order Date
-  //             <ArrowUpDown className="ml-2 h-4 w-4" />
-  //         </Button>
-  //     )
-  //   },
-  //   cell: ({row}) =>{
-  //     const dateValue = row.getValue('transaction_date');
-
-
-  //     const date = new Date(row.getValue('order_date'));
-
-  //     // Define an array of month abbreviations
-  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  //     // Extract day, month, and year
-  //     const day = String(date.getUTCDate()).padStart(2, '0');
-  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-  //     const year = date.getUTCFullYear();
-
-  //     // Format as dd mm yyyy
-  //     const formattedDate = `${day} ${month} ${year}`;
-
-  //     return <div>{formattedDate}</div>
-  //   }
-  // },
-  // {
-  //   accessorKey: "created_by",
-  //   header: "Created By",
-  // },
-  // {
-  //   accessorKey: "created_datetime",
-  //   header: "Created Date",
-  //   cell: ({row}) =>{
-  //       const date = new Date(row.getValue('created_datetime'));
-  //       const formattedDate = date.toLocaleDateString('en-GB', {
-  //                                   day: '2-digit',
-  //                                   month: 'long',
-  //                                   year: 'numeric',
-  //                                   }).replace(/ /g, ' ');
-  //       return <div>{formattedDate}</div>
-  //   }
-  // },
-  // {
-  //   accessorKey: "modified_by",
-  //   header: "Modified By",
-  // },
-  // {
-  //   accessorKey: "modified_datetime",
-  //   header: "Modified Date",
-  //   cell: ({row}) =>{
-  //     const dateValue = row.getValue('modified_datetime');
-
-
-  //     const date = new Date(row.getValue('modified_datetime'));
-
-  //     // Define an array of month abbreviations
-  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  //     // Extract day, month, and year
-  //     const day = String(date.getUTCDate()).padStart(2, '0');
-  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-  //     const year = date.getUTCFullYear();
-
-  //     // Format as dd mm yyyy
-  //     const formattedDate = `${day} ${month} ${year}`;
-
-  //     return <div>{formattedDate}</div>
-  //   }
-  // },
 ]

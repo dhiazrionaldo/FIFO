@@ -118,9 +118,14 @@ export function CreateStockIn() {
 
     setLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, data);
-      toast.success('Success Add Stock!');
-      window.location.reload();
+      if(qty < storage_minimum_stock){
+        toast.error('Can not add stock that qty below minimum stocks!')
+      }else {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, data);
+        toast.success('Success Add Stock!');
+        window.location.reload();
+      }
+      
     } catch (error) {
       toast.error('Failed to Add Stock!');
       console.error(error);

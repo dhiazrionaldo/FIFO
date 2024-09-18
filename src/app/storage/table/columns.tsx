@@ -98,10 +98,10 @@ export const columns: ColumnDef<stockIn>[] = [
       )
     },
     cell: ({row}) =>{
-      const dateValue = row.getValue('modified_datetime');
+      const dateValue = row.getValue('date_in');
 
 
-      const date = new Date(row.getValue('modified_datetime'));
+      const date = new Date(row.getValue('date_in'));
 
       // Define an array of month abbreviations
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -134,33 +134,33 @@ export const columns: ColumnDef<stockIn>[] = [
   //       return <div>{formattedDate}</div>
   //   }
   // },
-  {
-    accessorKey: "modified_by",
-    header: "Modified By",
-  },
-  {
-    accessorKey: "modified_datetime",
-    header: "Modified Date",
-    cell: ({row}) =>{
-      const dateValue = row.getValue('modified_datetime');
+  // {
+  //   accessorKey: "modified_by",
+  //   header: "Modified By",
+  // },
+  // {
+  //   accessorKey: "modified_datetime",
+  //   header: "Modified Date",
+  //   cell: ({row}) =>{
+  //     const dateValue = row.getValue('modified_datetime');
 
 
-      const date = new Date(row.getValue('modified_datetime'));
+  //     const date = new Date(row.getValue('modified_datetime'));
 
-      // Define an array of month abbreviations
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  //     // Define an array of month abbreviations
+  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-      // Extract day, month, and year
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-      const year = date.getUTCFullYear();
+  //     // Extract day, month, and year
+  //     const day = String(date.getUTCDate()).padStart(2, '0');
+  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
+  //     const year = date.getUTCFullYear();
 
-      // Format as dd mm yyyy
-      const formattedDate = `${day} ${month} ${year}`;
+  //     // Format as dd mm yyyy
+  //     const formattedDate = `${day} ${month} ${year}`;
 
-      return <div>{formattedDate}</div>
-    }
-  },
+  //     return <div>{formattedDate}</div>
+  //   }
+  // },
   {
     id: "actions",
     cell: ({ row }) => {

@@ -170,6 +170,11 @@ export async function deliverOrder(item){
         const beforeQty = currentQty.recordset[0]?.qty;
         const order_id = currentQty.recordset[0]?.id;
 
+        const storage_qty = await pool.request()
+                                      .input('storage_id', sql.Int, storage_id)
+                                      .query(`SELECT qty FROM dbo.storage_stocks WHERE id = @storage_id`)
+        const storageQty = storage_qty.recordset[0].qty;
+        
         const result = await pool.request()
                                         .input('qty', sql.Int, qty)
                                         .input('item_id', sql.Int, item_id)
@@ -187,9 +192,6 @@ export async function deliverOrder(item){
         const createdBy = result.recordset[0].created_by;
         const createdDateTime = result.recordset[0].created_datetime;
 
-        console.log('loungeId: ', loungeId)
-        console.log('orderId: ', order_id)
-
         await pool.request()
                             .input('id', sql.Int, id)
                             .input('storage_id', sql.Int, storage_id)
@@ -204,8 +206,24 @@ export async function deliverOrder(item){
                                                                 ELSE 'ORDER' 
                                                          END
                                     WHERE id = @id AND storage_id = @storage_id`)
-        
-        await pool.request()
+
+        if((storageQty-qty) == 0){
+            await pool.request()
+                                .input('storage_id', sql.Int, storage_id)
+                                .query('DELETE FROM dbo.[storage_stocks] WHERE id = @storage_id')
+
+            await pool.request()
+                                .input('lounge_id', sql.Int, loungeId)
+                                .input('transaction_date', sql.DateTime, transactionDateTime)
+                                .input('transaction_type', sql.NVarChar, 'DELETE STORAGE')
+                                .input('transaction_qty', sql.Int, transactionQty)
+                                .input('created_by', sql.NVarChar, createdBy)
+                                .input('created_datetime', sql.DateTime, createdDateTime)
+                                .input('before_qty', sql.Int, beforeQty)
+                                .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+                                        VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+        }else{
+            await pool.request()
                             .input('id', sql.Int, id)
                             .input('storage_id', sql.Int, storage_id)
                             .input('qty', sql.Int, qty)
@@ -217,10 +235,7 @@ export async function deliverOrder(item){
                                                 qty = (qty-@qty), 
                                                 total_price = (@unit_price * @qty)
                                     WHERE id = @storage_id`)
-
-        
-                                
-        await pool.request()
+            await pool.request()
                             .input('lounge_id', sql.Int, loungeId)
                             .input('transaction_date', sql.DateTime, transactionDateTime)
                             .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
@@ -230,6 +245,10 @@ export async function deliverOrder(item){
                             .input('before_qty', sql.Int, beforeQty)
                             .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
                                     VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+                
+        }
+        
+                                
         
         return result.recordset;
     } catch (error) {

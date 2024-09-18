@@ -87,15 +87,21 @@ export default function StoragePage() {
 
       setLoading(true);
       try {
-        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/order/deliverOrder`, updatedRow)
-        .then(()=>{
-        toast.success('Item Delivered!');        
-        setDialogOpen(false); // Close the dialog after submit
-        })
-        .finally(()=>{
+        if(inputQty > selectedRow.qty){
+          toast.error('Can not place order exceed order Qty!');
           setLoading(false);
-          window.location.reload();
-        });
+        }else{
+          const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/order/deliverOrder`, updatedRow)
+          .then(()=>{
+          toast.success('Item Delivered!');        
+          setDialogOpen(false); // Close the dialog after submit
+          })
+          .finally(()=>{
+            setLoading(false);
+            window.location.reload();
+          });
+        }
+        
       } catch (error) {
         toast.error('Error submitting data!');
         console.error(error);
@@ -141,32 +147,47 @@ export default function StoragePage() {
           </Card>
 
           {/* Lounge Order Card List */}
-          <Card className="grid gap-3 py-2 px-2 overflow-auto mt-3 max-h-[300px] md:max-h-[500px]">
+          <Card className="grid space-y-8 overflow-auto mt-3 max-h-[300px] md:max-h-[500px]">
             <CardTitle>
               <h1 className="text-lg md:text-2xl font-semibold capitalize p-3">Lounge Order List</h1>
             </CardTitle>
             <CardContent>
               {order.length > 0 ? (
                 order.map((row, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleRowClick(row)}
-                    className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                  >
-                    <Circle className="h-5 w-5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">Kode SKU</p>
-                      <p className="text-sm text-muted-foreground">{row.kode_sku}</p>
+                  // <div className="space-y-8">
+                    <div 
+                      key={index}
+                      onClick={() => handleRowClick(row)}
+                      className="flex items-center space-y-2 md:space-y-0 space-x-0 md:space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer" >
+                      <Circle className="h-9 w-9" />
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium leading-none">{row.kode_sku}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {row.item_name}
+                        </p>
+                      </div>
+                      <div className="ml-auto font-medium text-xl">{row.qty}</div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">Item Name</p>
-                      <p className="text-sm text-muted-foreground">{row.item_name}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium leading-none">Order Qty</p>
-                      <p className="text-sm text-muted-foreground">{row.qty}</p>
-                    </div>
-                  </div>
+                  // </div>
+                  // <div
+                  //   key={index}
+                  //   onClick={() => handleRowClick(row)}
+                  //   className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  // >
+                  //   <Circle className="h-5 w-5" />
+                  //   <div className="space-y-1">
+                  //     <p className="text-sm font-medium leading-none">Kode SKU</p>
+                  //     <p className="text-sm text-muted-foreground">{row.kode_sku}</p>
+                  //   </div>
+                  //   <div className="space-y-1">
+                  //     <p className="text-sm font-medium leading-none">Item Name</p>
+                  //     <p className="text-sm text-muted-foreground">{row.item_name}</p>
+                  //   </div>
+                  //   <div className="space-y-2">
+                  //     <p className="text-sm font-medium leading-none">Order Qty</p>
+                  //     <p className="text-sm text-muted-foreground">{row.qty}</p>
+                  //   </div>
+                  // </div>
                 ))
               ) : (
                 <Card>
@@ -243,10 +264,10 @@ export default function StoragePage() {
                       <p className="text-sm font-medium leading-none">Kode SKU</p>
                       <p className="text-sm text-muted-foreground">{row.kode_sku}</p>
                     </div>
-                    <div className="space-y-1">
+                    {/* <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">Item Name</p>
                       <p className="text-sm text-muted-foreground">{row.item_name}</p>
-                    </div>
+                    </div> */}
                     <div className="space-y-2">
                       <p className="text-sm font-medium leading-none">Order Qty</p>
                       <p className="text-sm text-muted-foreground">{row.qty}</p>
