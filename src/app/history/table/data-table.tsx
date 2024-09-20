@@ -23,20 +23,32 @@ import {
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { DataTablePagination } from "./data-table-pagination"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { Button } from "@/components/ui/button"
+import { DetailTable } from './detail-table';
 
 export const maxDuration = 60;
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { kode_sku: string; id: number }, TValue>({
   columns,
   data,
+  from,
+  to,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [expandedSku, setExpandedSku] = React.useState<string | null>(null);
 
   const table = useReactTable({
     data,
@@ -88,16 +100,30 @@ export function DataTable<TData, TValue>({
             <TableBody>
             {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                >
-                    {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                    ))}
-                </TableRow>
+              <Collapsible key={row.id} asChild>
+                <>
+                  <TableRow
+                      key={row.id}
+                      onClick={() => setExpandedSku(row.original.kode_sku)}
+                      data-state={row.getIsSelected() && "selected"}
+                  >
+                      {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                      ))}
+                  </TableRow>
+                  <CollapsibleContent key={row.original.id} asChild>
+                    <tr>
+                      <td colSpan={columns.length} className="p-0">
+                        <div className="pl-4">
+                          <DetailTable kode_sku={row.original.kode_sku} from={from} to={to} />
+                        </div>
+                      </td>
+                    </tr>
+                  </CollapsibleContent>
+                </>
+              </Collapsible>
                 ))
             ) : (
                 <TableRow>
@@ -111,22 +137,7 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <DataTablePagination table={table} />
-        {/* <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button> */}
+        
       </div>
     </>
   )

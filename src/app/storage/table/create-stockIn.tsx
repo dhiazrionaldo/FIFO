@@ -123,7 +123,6 @@ export function CreateStockIn() {
       }else {
         await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, data);
         toast.success('Success Add Stock!');
-        window.location.reload();
       }
       
     } catch (error) {

@@ -36,7 +36,8 @@ export default function StoragePage() {
       alert("Please select a date range");
       return;
     }
-
+    
+    getOrderList();
     setLoading(true);
     try {
       const params = {
@@ -98,7 +99,8 @@ export default function StoragePage() {
           })
           .finally(()=>{
             setLoading(false);
-            window.location.reload();
+            getStockInData();
+            getOrderList();
           });
         }
         
@@ -210,7 +212,6 @@ export default function StoragePage() {
               <div>
                 <p>Item: {selectedRow.item_name}</p>
                 <Input
-                  type="number"
                   value={inputQty}
                   onChange={(e) => setInputQty(Number(e.target.value))}
                   className="mb-4"

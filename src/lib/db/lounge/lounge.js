@@ -15,13 +15,11 @@ export async function getLoungeData(dateRange){
                                             a.date_in, a.created_by, c.kode_sku,
                                                 a.created_datetime, ISNULL(a.modified_by, a.created_by) AS modified_by, ISNULL(a.modified_datetime, a.created_datetime) AS modified_datetime, a.storage_id, a.total_price, c.price AS unit_price
                                          FROM dbo.[lounge_stocks] AS a
-                                         INNER JOIN dbo.storage_stocks AS b
-                                         ON a.storage_id = b.id
                                          INNER JOIN dbo.item_master AS c
                                          ON a.item_id = c.id
                                          INNER JOIN dbo.sku_category_master AS d
                                          ON c.category_id = d.id 
-                                         WHERE CAST(a.date_in AS DATE) BETWEEN CAST(@startDate AS DATE) AND CAST(@endDate AS DATE)
+                                         WHERE A.QTY > 0 AND CAST(a.date_in AS DATE) BETWEEN CAST(@startDate AS DATE) AND CAST(@endDate AS DATE)
                                          ORDER BY ISNULL(a.created_datetime, a.modified_datetime) DESC`);
         return result.recordset;
     } catch (error) {

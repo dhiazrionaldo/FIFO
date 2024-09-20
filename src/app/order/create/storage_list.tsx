@@ -40,7 +40,7 @@ export function StorageDrawerDialog() {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="md:w-auto">Choose Data</Button>
+          <Button variant="outline" className="md:w-auto max-w-[150px]">Choose Data</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[100rem]">
           <DialogHeader>

@@ -39,6 +39,7 @@ const LoungeorderPage = () => {
         isExceed = true;
       }
 
+
       return {
         ...row,
         created_by: username!,
@@ -47,8 +48,11 @@ const LoungeorderPage = () => {
     });
 
     // If there's any exceeded qty, don't submit the order
-    if (isExceed) return;
-    setLoading(false);
+    if (isExceed) {
+        setLoading(false); 
+        return
+    };
+    
     // Submit the order if no validation errors
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/order`, updatedRows)

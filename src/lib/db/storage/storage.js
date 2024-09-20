@@ -17,7 +17,7 @@ export async function getStorage(dateRange){
                                          ON a.item_id = c.id
                                          INNER JOIN dbo.sku_category_master AS b
                                          ON c.category_id  = b.id
-                                         WHERE CAST(a.date_in AS DATE) BETWEEN CAST(@startDate AS DATE) AND CAST(@endDate AS DATE)
+                                         WHERE a.qty > 0 AND CAST(a.date_in AS DATE) BETWEEN CAST(@startDate AS DATE) AND CAST(@endDate AS DATE)
                                          ORDER BY ISNULL(a.created_datetime, a.modified_datetime) DESC`);
         return result.recordset;
     } catch (error) {

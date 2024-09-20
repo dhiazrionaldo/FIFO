@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal, PackageOpen, Pencil, Trash2 } from "lucide-react"
+import { ArrowUpDown, ChevronDownCircle, MoreHorizontal, PackageOpen, Pencil, Trash2 } from "lucide-react"
 import{Button} from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -12,6 +12,9 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { Badge } from '@/components/ui/badge';
+import { TableBody, TableRow } from '@/components/ui/table';
+import { CollapsibleTrigger } from '@/components/ui/collapsible';
+import toast from 'react-hot-toast';
 
 export const maxDuration = 60;
 
@@ -31,9 +34,19 @@ export type stockIn = {
   created_datetime: string
   modified_by: string
   modified_datetime: string
+  kode_sku: string
 }
 
 export const columns: ColumnDef<stockIn>[] = [  
+  {
+    header: "Action",
+    cell: ({row}) => {
+      return (
+        
+        <CollapsibleTrigger asChild><Button className='text-white' variant='ghost'><ChevronDownCircle className='w-5 h-5'/></Button></CollapsibleTrigger>
+      )
+    }
+  },
   {
     accessorKey: "kode_sku",
     header: "SKU Code",
@@ -87,9 +100,9 @@ export const columns: ColumnDef<stockIn>[] = [
       const status = new String(row.getValue('transaction_type'))
       
       if(status == 'DELIVER TO LOUNGE'){
-        return <div><Badge variant='destructive'>{status}</Badge></div>
+        return <div><Badge className='text-white bg-green-700'>{status}</Badge></div>
       } else if(status =='LOUNGE ORDER'){
-        return <div><Badge className='text-white bg-yellow-400'>{status}</Badge></div>
+        return <div><Badge className='text-white bg-yellow-500'>{status}</Badge></div>
       }
       else{
         return <div><Badge className='text-white'>{status}</Badge></div>
@@ -120,27 +133,27 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "modified_by",
     header: "Modified By",
   },
-  {
-    accessorKey: "modified_datetime",
-    header: "Modified Date",
-    cell: ({row}) =>{
-      const dateValue = row.getValue('modified_datetime');
+  // {
+  //   accessorKey: "modified_datetime",
+  //   header: "Modified Date",
+  //   cell: ({row}) =>{
+  //     const dateValue = row.getValue('modified_datetime');
 
 
-      const date = new Date(row.getValue('modified_datetime'));
+  //     const date = new Date(row.getValue('modified_datetime'));
 
-      // Define an array of month abbreviations
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  //     // Define an array of month abbreviations
+  //     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-      // Extract day, month, and year
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
-      const year = date.getUTCFullYear();
+  //     // Extract day, month, and year
+  //     const day = String(date.getUTCDate()).padStart(2, '0');
+  //     const month = monthNames[date.getUTCMonth()]; // Get month abbreviation
+  //     const year = date.getUTCFullYear();
 
-      // Format as dd mm yyyy
-      const formattedDate = `${day} ${month} ${year}`;
+  //     // Format as dd mm yyyy
+  //     const formattedDate = `${day} ${month} ${year}`;
 
-      return <div>{formattedDate}</div>
-    }
-  },
+  //     return <div>{formattedDate}</div>
+  //   }
+  // },
 ]

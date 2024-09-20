@@ -54,6 +54,7 @@ export async function getAllOrder(){
                                             a.total_price, 
                                             b.category_id,
                                             c.category_name AS category_name, 
+                                           -- (a.qty - ISNULL(a.deliver_qty,0)) AS qty,
                                             a.qty,
                                             a.status,
 											a.storage_id,
@@ -159,103 +160,368 @@ export async function editLoungeOrder(id, item){
     }
 }
 
-export async function deliverOrder(item){
+export async function deliverOrder(item) {
     const pool = await poolPromise;
 
     try {
         const {id, storage_id, qty, item_id, unit_price, created_by} = item;
+
+        // Get current order quantity and id
         const currentQty = await pool.request()
                                      .input('id', sql.Int, id)
-                                     .query(`SELECT id, qty FROM dbo.[order]`);
+                                     .query(`SELECT id, qty FROM dbo.[order] WHERE id = @id`);
         const beforeQty = currentQty.recordset[0]?.qty;
         const order_id = currentQty.recordset[0]?.id;
 
+        // Get current storage stock quantity
         const storage_qty = await pool.request()
                                       .input('storage_id', sql.Int, storage_id)
-                                      .query(`SELECT qty FROM dbo.storage_stocks WHERE id = @storage_id`)
+                                      .query(`SELECT qty FROM dbo.storage_stocks WHERE id = @storage_id`);
         const storageQty = storage_qty.recordset[0].qty;
-        
-        const result = await pool.request()
-                                        .input('qty', sql.Int, qty)
-                                        .input('item_id', sql.Int, item_id)
-                                        .input('created_by', sql.NVarChar, created_by)
-                                        .input('unit_price', sql.Int, unit_price)
-                                        .input('storage_id', sql.Int, storage_id)
-                                        .input('order_id', sql.Int, order_id)
-                                        .query(`INSERT INTO dbo.lounge_stocks (item_id, storage_id, order_id, total_price, date_in, qty, created_by, created_datetime)
-                                                OUTPUT INSERTED.id, INSERTED.order_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
-                                                VALUES (@item_id, @storage_id, @order_id, (@unit_price * @qty), SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
 
-        const loungeId = result.recordset[0].id;
-        const transactionDateTime = result.recordset[0].date_in;
-        const transactionQty = result.recordset[0].qty;
-        const createdBy = result.recordset[0].created_by;
-        const createdDateTime = result.recordset[0].created_datetime;
+        // Check if a lounge stock record exists for the given storage_id
+        const loungeRecord = await pool.request()
+                                       .input('storage_id', sql.Int, storage_id)
+                                       .query(`SELECT id, qty FROM dbo.lounge_stocks WHERE storage_id = @storage_id`);
 
-        await pool.request()
-                            .input('id', sql.Int, id)
-                            .input('storage_id', sql.Int, storage_id)
-                            .input('qty', sql.Int, qty)
-                            .input('modified_by', sql.NVarChar, created_by)
-                            .query(`UPDATE dbo.[order] SET 
-                                                deliver_qty = @qty, 
-                                                modified_by = @modified_by, 
-                                                modified_datetime = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', 
-                                                status = CASE 
-                                                                WHEN (qty-@qty) = 0 THEN 'DELIVERED' 
-                                                                ELSE 'ORDER' 
-                                                         END
-                                    WHERE id = @id AND storage_id = @storage_id`)
-
-        if((storageQty-qty) == 0){
-            await pool.request()
-                                .input('storage_id', sql.Int, storage_id)
-                                .query('DELETE FROM dbo.[storage_stocks] WHERE id = @storage_id')
+        if (loungeRecord.recordset.length > 0) {
+            // If lounge stock exists, update the qty by adding the new qty
+            const existingLoungeQty = loungeRecord.recordset[0].qty;
+            const newLoungeQty = existingLoungeQty + qty;
 
             await pool.request()
-                                .input('lounge_id', sql.Int, loungeId)
-                                .input('transaction_date', sql.DateTime, transactionDateTime)
-                                .input('transaction_type', sql.NVarChar, 'DELETE STORAGE')
-                                .input('transaction_qty', sql.Int, transactionQty)
-                                .input('created_by', sql.NVarChar, createdBy)
-                                .input('created_datetime', sql.DateTime, createdDateTime)
-                                .input('before_qty', sql.Int, beforeQty)
-                                .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
-                                        VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
-        }else{
+                      .input('storage_id', sql.Int, storage_id)
+                      .input('qty', sql.Int, newLoungeQty)
+                      .input('unit_price', sql.Int, unit_price)
+                      .input('modified_by', sql.NVarChar, created_by)
+                      .query(`UPDATE dbo.lounge_stocks 
+                              SET qty = @qty, 
+                                  total_price = (@unit_price * @qty), 
+                                  modified_by = @modified_by, 
+                                  modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time'
+                              WHERE storage_id = @storage_id`);
+
+            const loungeId = loungeRecord.recordset[0].id;
+            const transactionDateTime = new Date();
+
+            // Insert into transaction_history (for update case)
             await pool.request()
-                            .input('id', sql.Int, id)
-                            .input('storage_id', sql.Int, storage_id)
-                            .input('qty', sql.Int, qty)
-                            .input('modified_by', sql.NVarChar, created_by)
-                            .input('unit_price', sql.Int, unit_price)
-                            .query(`UPDATE dbo.[storage_stocks] SET 
-                                                modified_by = @modified_by, 
-                                                modified_datetime = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', 
-                                                qty = (qty-@qty), 
-                                                total_price = (@unit_price * @qty)
-                                    WHERE id = @storage_id`)
+                      .input('lounge_id', sql.Int, loungeId)
+                      .input('transaction_date', sql.DateTime, transactionDateTime)
+                      .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+                      .input('transaction_qty', sql.Int, qty)
+                      .input('created_by', sql.NVarChar, created_by)
+                      .input('created_datetime', sql.DateTime, transactionDateTime)
+                      .input('before_qty', sql.Int, existingLoungeQty)
+                      .query(`INSERT INTO dbo.transaction_history 
+                              (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+                              VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time')`);
+        } else {
+            // If no existing lounge stock, insert a new record
+            const result = await pool.request()
+                                     .input('qty', sql.Int, qty)
+                                     .input('item_id', sql.Int, item_id)
+                                     .input('created_by', sql.NVarChar, created_by)
+                                     .input('unit_price', sql.Int, unit_price)
+                                     .input('storage_id', sql.Int, storage_id)
+                                     .input('order_id', sql.Int, order_id)
+                                     .query(`INSERT INTO dbo.lounge_stocks 
+                                             (item_id, storage_id, order_id, total_price, date_in, qty, created_by, created_datetime)
+                                             OUTPUT INSERTED.id, INSERTED.order_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
+                                             VALUES (@item_id, @storage_id, @order_id, (@unit_price * @qty), SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time')`);
+
+            const loungeId = result.recordset[0].id;
+            const transactionDateTime = result.recordset[0].date_in;
+
+            // Insert into transaction_history (for insert case)
             await pool.request()
-                            .input('lounge_id', sql.Int, loungeId)
-                            .input('transaction_date', sql.DateTime, transactionDateTime)
-                            .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
-                            .input('transaction_qty', sql.Int, transactionQty)
-                            .input('created_by', sql.NVarChar, createdBy)
-                            .input('created_datetime', sql.DateTime, createdDateTime)
-                            .input('before_qty', sql.Int, beforeQty)
-                            .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
-                                    VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
-                
+                      .input('lounge_id', sql.Int, loungeId)
+                      .input('transaction_date', sql.DateTime, transactionDateTime)
+                      .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+                      .input('transaction_qty', sql.Int, qty)
+                      .input('created_by', sql.NVarChar, created_by)
+                      .input('created_datetime', sql.DateTime, transactionDateTime)
+                      .input('before_qty', sql.Int, beforeQty)
+                      .query(`INSERT INTO dbo.transaction_history 
+                              (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+                              VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time')`);
         }
+
+        // Update the order table
+        await pool.request()
+                  .input('id', sql.Int, id)
+                  .input('storage_id', sql.Int, storage_id)
+                  .input('qty', sql.Int, qty)
+                  .input('modified_by', sql.NVarChar, created_by)
+                  .query(`UPDATE dbo.[order] 
+                          SET deliver_qty = @qty, 
+                              qty = (qty - @qty),
+                              modified_by = @modified_by, 
+                              modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', 
+                              status = CASE 
+                                         WHEN (qty-@qty) = 0 THEN 'DELIVERED' 
+                                         ELSE 'ORDER' 
+                                       END
+                          WHERE id = @id AND storage_id = @storage_id`);
+
+        // Update storage stock
+        const remainingQty = storageQty - qty;
+        await pool.request()
+                .input('storage_id', sql.Int, storage_id)
+                .input('qty', sql.Int, remainingQty)
+                .input('unit_price', sql.Int, unit_price)
+                .input('modified_by', sql.NVarChar, created_by)
+                .query(`UPDATE dbo.[storage_stocks] SET 
+                                modified_by = @modified_by, 
+                                modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', 
+                                qty = @qty, 
+                                total_price = (@unit_price * @qty)
+                        WHERE id = @storage_id`);
+
+        return true;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error processing the order delivery: ' + error);
+    }
+}
+
+// export async function deliverOrder(item) {
+//     const pool = await poolPromise;
+
+//     try {
+//         const {id, storage_id, qty, item_id, unit_price, created_by} = item;
+
+//         // Get current order quantity and id
+//         const currentQty = await pool.request()
+//                                      .input('id', sql.Int, id)
+//                                      .query(`SELECT id, qty FROM dbo.[order] WHERE id = @id`);
+//         const beforeQty = currentQty.recordset[0]?.qty;
+//         const order_id = currentQty.recordset[0]?.id;
+//         const orderQty = currentQty.recordset[0]?.qty;
+
+//         // Get current storage stock quantity
+//         const storage_qty = await pool.request()
+//                                       .input('storage_id', sql.Int, storage_id)
+//                                       .query(`SELECT qty FROM dbo.storage_stocks WHERE id = @storage_id`);
+//         const storageQty = storage_qty.recordset[0].qty;
+
+//         const lounge_qty = await pool.request()
+//                                             .input('storage_id', sql.Int, storage_id)
+//                                             .query(`SELECT qty FROM dbo.lounge_stocks WHERE storage_id = @storage_id`);
+//         const loungeQty = lounge_qty.recordset[0].qty;
+
+//         if((storageQty+loungeQty) == orderQty){
+//             console.log('masok kondisi puol order qty');
+//         }
+
+//         // Insert into lounge_stocks table
+//         const result = await pool.request()
+//                                  .input('qty', sql.Int, qty)
+//                                  .input('item_id', sql.Int, item_id)
+//                                  .input('created_by', sql.NVarChar, created_by)
+//                                  .input('unit_price', sql.Int, unit_price)
+//                                  .input('storage_id', sql.Int, storage_id)
+//                                  .input('order_id', sql.Int, order_id)
+//                                  .query(`INSERT INTO dbo.lounge_stocks (item_id, storage_id, order_id, total_price, date_in, qty, created_by, created_datetime)
+//                                          OUTPUT INSERTED.id, INSERTED.order_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
+//                                          VALUES (@item_id, @storage_id, @order_id, (@unit_price * @qty), SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time')`);
+
+//         const loungeId = result.recordset[0].id;
+//         const transactionDateTime = result.recordset[0].date_in;
+//         const transactionQty = result.recordset[0].qty;
+//         const createdBy = result.recordset[0].created_by;
+//         const createdDateTime = result.recordset[0].created_datetime;
+
+//         // Update order table
+//         await pool.request()
+//                   .input('id', sql.Int, id)
+//                   .input('storage_id', sql.Int, storage_id)
+//                   .input('qty', sql.Int, qty)
+//                   .input('modified_by', sql.NVarChar, created_by)
+//                   .query(`UPDATE dbo.[order] SET 
+//                                   qty = (qty - @qty),
+//                                   deliver_qty = @qty, 
+//                                   modified_by = @modified_by, 
+//                                   modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', 
+//                                   status = CASE 
+//                                              WHEN (qty-@qty) = 0 THEN 'DELIVERED' 
+//                                              ELSE 'ORDER' 
+//                                            END
+//                           WHERE id = @id AND storage_id = @storage_id`);
+
+//         // Insert into transaction_history
+//         await pool.request()
+//                   .input('lounge_id', sql.Int, loungeId)
+//                   .input('transaction_date', sql.DateTime, transactionDateTime)
+//                   .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+//                   .input('transaction_qty', sql.Int, transactionQty)
+//                   .input('created_by', sql.NVarChar, createdBy)
+//                   .input('created_datetime', sql.DateTime, createdDateTime)
+//                   .input('before_qty', sql.Int, beforeQty)
+//                   .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//                           VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+
+//         // Handle storage stock logic: delete if no stock left, update if stock remains
+//         // if ((storageQty - qty) === 0) {
+//         //     // Delete from storage if qty becomes 0
+//         //     await pool.request()
+//         //               .input('storage_id', sql.Int, storage_id)
+//         //               .query('DELETE FROM dbo.[storage_stocks] WHERE id = @storage_id');
+
+//         //     // Insert deletion into transaction_history
+//         //     await pool.request()
+//         //               .input('lounge_id', sql.Int, loungeId)
+//         //               .input('transaction_date', sql.DateTime, transactionDateTime)
+//         //               .input('transaction_type', sql.NVarChar, 'DELETE STORAGE')
+//         //               .input('transaction_qty', sql.Int, transactionQty)
+//         //               .input('created_by', sql.NVarChar, createdBy)
+//         //               .input('created_datetime', sql.DateTime, createdDateTime)
+//         //               .input('before_qty', sql.Int, beforeQty)
+//         //               .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//         //                       VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+//         // } else {
+//             // Update storage stock
+//             const remainingQty = storageQty - qty;
+//             await pool.request()
+//                       .input('storage_id', sql.Int, storage_id)
+//                       .input('qty', sql.Int, remainingQty)
+//                       .input('unit_price', sql.Int, unit_price)
+//                       .input('modified_by', sql.NVarChar, created_by)
+//                       .query(`UPDATE dbo.[storage_stocks] SET 
+//                                       modified_by = @modified_by, 
+//                                       modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time', 
+//                                       qty = @qty, 
+//                                       total_price = (@unit_price * @qty)
+//                               WHERE id = @storage_id`);
+
+//             // Insert update into transaction_history
+//             // await pool.request()
+//             //           .input('lounge_id', sql.Int, loungeId)
+//             //           .input('transaction_date', sql.DateTime, transactionDateTime)
+//             //           .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+//             //           .input('transaction_qty', sql.Int, transactionQty)
+//             //           .input('created_by', sql.NVarChar, createdBy)
+//             //           .input('created_datetime', sql.DateTime, createdDateTime)
+//             //           .input('before_qty', sql.Int, beforeQty)
+//             //           .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//             //                   VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+//         // }
+
+//         return result.recordset;
+//     } catch (error) {
+//         console.log(error);
+//         throw new Error('Error processing the order delivery: ' + error);
+//     }
+// }
+
+// export async function deliverOrder(item){
+//     const pool = await poolPromise;
+
+//     try {
+//         const {id, storage_id, qty, item_id, unit_price, created_by} = item;
+//         const currentQty = await pool.request()
+//                                      .input('id', sql.Int, id)
+//                                      .query(`SELECT id, qty FROM dbo.[order]`);
+//         const beforeQty = currentQty.recordset[0]?.qty;
+//         const order_id = currentQty.recordset[0]?.id;
+
+//         const storage_qty = await pool.request()
+//                                       .input('storage_id', sql.Int, storage_id)
+//                                       .query(`SELECT qty FROM dbo.storage_stocks WHERE id = @storage_id`)
+//         const storageQty = storage_qty.recordset[0].qty;
+        
+//         const result = await pool.request()
+//                                         .input('qty', sql.Int, qty)
+//                                         .input('item_id', sql.Int, item_id)
+//                                         .input('created_by', sql.NVarChar, created_by)
+//                                         .input('unit_price', sql.Int, unit_price)
+//                                         .input('storage_id', sql.Int, storage_id)
+//                                         .input('order_id', sql.Int, order_id)
+//                                         .query(`INSERT INTO dbo.lounge_stocks (item_id, storage_id, order_id, total_price, date_in, qty, created_by, created_datetime)
+//                                                 OUTPUT INSERTED.id, INSERTED.order_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in 
+//                                                 VALUES (@item_id, @storage_id, @order_id, (@unit_price * @qty), SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
+
+//         const loungeId = result.recordset[0].id;
+//         const transactionDateTime = result.recordset[0].date_in;
+//         const transactionQty = result.recordset[0].qty;
+//         const createdBy = result.recordset[0].created_by;
+//         const createdDateTime = result.recordset[0].created_datetime;
+
+//         await pool.request()
+//                             .input('id', sql.Int, id)
+//                             .input('storage_id', sql.Int, storage_id)
+//                             .input('qty', sql.Int, qty)
+//                             .input('modified_by', sql.NVarChar, created_by)
+//                             .query(`UPDATE dbo.[order] SET 
+//                                                 deliver_qty = @qty, 
+//                                                 modified_by = @modified_by, 
+//                                                 modified_datetime = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', 
+//                                                 status = CASE 
+//                                                                 WHEN (qty-@qty) = 0 THEN 'DELIVERED' 
+//                                                                 ELSE 'ORDER' 
+//                                                          END
+//                                     WHERE id = @id AND storage_id = @storage_id`)
+        
+//         await pool.request()
+//                             .input('lounge_id', sql.Int, loungeId)
+//                             .input('transaction_date', sql.DateTime, transactionDateTime)
+//                             .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+//                             .input('transaction_qty', sql.Int, transactionQty)
+//                             .input('created_by', sql.NVarChar, createdBy)
+//                             .input('created_datetime', sql.DateTime, createdDateTime)
+//                             .input('before_qty', sql.Int, beforeQty)
+//                             .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//                                     VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+
+//         if((storageQty-qty) == 0){
+//             await pool.request()
+//                                 .input('storage_id', sql.Int, storage_id)
+//                                 .query('DELETE FROM dbo.[storage_stocks] WHERE id = @storage_id')
+
+//             await pool.request()
+//                                 .input('lounge_id', sql.Int, loungeId)
+//                                 .input('transaction_date', sql.DateTime, transactionDateTime)
+//                                 .input('transaction_type', sql.NVarChar, 'DELETE STORAGE')
+//                                 .input('transaction_qty', sql.Int, transactionQty)
+//                                 .input('created_by', sql.NVarChar, createdBy)
+//                                 .input('created_datetime', sql.DateTime, createdDateTime)
+//                                 .input('before_qty', sql.Int, beforeQty)
+//                                 .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//                                         VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+//         }else{
+//             await pool.request()
+//                             .input('id', sql.Int, id)
+//                             .input('storage_id', sql.Int, storage_id)
+//                             .input('qty', sql.Int, qty)
+//                             .input('modified_by', sql.NVarChar, created_by)
+//                             .input('unit_price', sql.Int, unit_price)
+//                             .query(`UPDATE dbo.[storage_stocks] SET 
+//                                                 modified_by = @modified_by, 
+//                                                 modified_datetime = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', 
+//                                                 qty = (qty-@qty), 
+//                                                 total_price = (@unit_price * @qty)
+//                                     WHERE id = @storage_id`)
+//             await pool.request()
+//                             .input('lounge_id', sql.Int, loungeId)
+//                             .input('transaction_date', sql.DateTime, transactionDateTime)
+//                             .input('transaction_type', sql.NVarChar, 'DELIVER TO LOUNGE')
+//                             .input('transaction_qty', sql.Int, transactionQty)
+//                             .input('created_by', sql.NVarChar, createdBy)
+//                             .input('created_datetime', sql.DateTime, createdDateTime)
+//                             .input('before_qty', sql.Int, beforeQty)
+//                             .query(`INSERT INTO dbo.transaction_history (lounge_id, before_qty, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+//                                     VALUES (@lounge_id, @before_qty, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+                
+//         }
         
                                 
         
-        return result.recordset;
-    } catch (error) {
-        console.log(error)
-        throw new Error('Error fetching items: ' + error);        
-    }
-}
+//         return result.recordset;
+//     } catch (error) {
+//         console.log(error)
+//         throw new Error('Error fetching items: ' + error);        
+//     }
+// }
 
 export async function editStockOut(id, item){
     const pool = await poolPromise;
