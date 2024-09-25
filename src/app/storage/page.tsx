@@ -1,5 +1,5 @@
 'use client';
-'use client';
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { DataTable } from "./table/data-table";
@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useMediaQuery } from 'usehooks-ts';
+
 
 export default function StoragePage() {
   const today = new Date();

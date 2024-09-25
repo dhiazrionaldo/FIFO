@@ -10,7 +10,7 @@ export async function getStorage(dateRange){
         const result = await pool.request()
                                  .input('startDate', sql.DateTime, from)
                                  .input('endDate', sql.DateTime, to)
-                                 .query(`SELECT a.id, a.item_id, c.item_name, c.category_id AS sku_category_id, c.kode_sku, c.price AS unit_price, a.total_price, b.category_name AS category_name, a.qty, a.date_in, 
+                                 .query(`SELECT a.id, a.item_id, c.item_name, c.category_id AS sku_category_id, c.kode_sku, c.price AS unit_price, a.total_price, b.category_name AS category_name, a.qty, a.opening_balance, a.closing_balance, a.date_in, 
                                          a.created_by, a.created_datetime, ISNULL(a.modified_by, a.created_by) AS modified_by, ISNULL(a.modified_datetime, a.created_datetime) AS modified_datetime
                                          FROM dbo.storage_stocks AS a
                                          INNER JOIN dbo.item_master AS c
@@ -66,9 +66,9 @@ export async function createStorage(item){
                                 .input('price', sql.Int, price)
                                 .input('created_by', sql.NVarChar, created_by)
                                 .output('id', sql.Int)
-                                .query(`INSERT INTO dbo.storage_stocks (item_id, date_in, qty, total_price, created_by, created_datetime) 
+                                .query(`INSERT INTO dbo.storage_stocks (item_id, date_in, qty, opening_balance, total_price, created_by, created_datetime) 
                                         OUTPUT INSERTED.id, INSERTED.item_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in
-                                        VALUES (@item_id, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, (@price * @qty), @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
+                                        VALUES (@item_id, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', @qty, @qty, (@price * @qty), @created_by, SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time')`);
         
         const stockInId = result.recordset[0].id;
         const transactionDateTime = result.recordset[0].date_in;
@@ -90,6 +90,51 @@ export async function createStorage(item){
     } catch (error) {
         console.log(error)
         throw new Error('Error fetching items: ' + error);
+    }
+}
+
+export async function storageOpeningBalance(items){
+    const pool = await poolPromise;
+    const transaction = new sql.Transaction(pool);
+
+    try {
+        await transaction.begin();
+        for(const item of items){
+            const result = await pool.request()
+                                .input('id', sql.Int, item.id)
+                                .input('item_id', sql.Int, item.item_id)
+                                .input('qty', sql.Int, item.qty)
+                                .input('price', sql.Int, item.price)
+                                .input('created_by', sql.NVarChar, item.created_by)
+                                .query(`UPDATE dbo.storage_stocks SET opening_balance = @qty, qty = @qty, modified_by = @created_by, date_in = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time', modified_datetime = SYSDATETIMEOFFSET()  AT TIME ZONE 'SE Asia Standard Time'
+                                        OUTPUT INSERTED.id, INSERTED.item_id, INSERTED.qty, INSERTED.created_by, INSERTED.created_datetime, INSERTED.date_in
+                                        WHERE id = @id
+                                    `);
+        
+            const stockInId = result.recordset[0].id;
+            const transactionDateTime = result.recordset[0].modified_datetime;
+            const transactionQty = result.recordset[0].qty;
+            const createdBy = result.recordset[0].created_by;
+            const createdDateTime = result.recordset[0].created_datetime;
+
+            await pool.request()
+                                .input('stock_in_id', sql.Int, stockInId)
+                                .input('transaction_date', sql.DateTime, transactionDateTime)
+                                .input('transaction_type', sql.NVarChar, 'STORAGE OPENING BALANCE')
+                                .input('transaction_qty', sql.Int, transactionQty)
+                                .input('created_by', sql.NVarChar, createdBy)
+                                .input('created_datetime', sql.DateTime, createdDateTime)
+                                .query(`INSERT INTO dbo.transaction_history (stock_in_id, transaction_date, transaction_type, transaction_qty, created_by, created_datetime, modified_by, modified_datetime)
+                                        VALUES (@stock_in_id, @transaction_date, @transaction_type, @transaction_qty, @created_by, @created_datetime, @created_by, @created_datetime)`);
+
+        }
+
+        await transaction.commit();
+
+        return {message: 'Opening balance has created successfully'}
+    } catch (error) {
+        console.log(error)
+        throw new Error('Error set opening balance: ' + error);
     }
 }
 

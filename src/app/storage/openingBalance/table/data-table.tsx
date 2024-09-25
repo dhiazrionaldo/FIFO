@@ -24,9 +24,11 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { CreateStockIn } from "./create-stockIn"
-import { CirclePlus, Loader2, NotebookPenIcon } from "lucide-react"
+import { CheckCircle2, CirclePlus, SaveIcon } from "lucide-react"
 import Link from "next/link"
 import { DataTablePagination } from "./data-table-pagination"
+import { DrawerClose } from "@/components/ui/drawer"
+import { useSelectedRow } from '@/app/storage/selected-row-provider';
 
 export const maxDuration = 60;
 
@@ -39,9 +41,10 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [selectedRows, setSelectedRow] = React.useState<any[]>([]);
+  const { setSelectedRows } = useSelectedRow();
 
   const table = useReactTable({
     data,
@@ -57,10 +60,16 @@ export function DataTable<TData, TValue>({
         columnFilters,
     }
   })
+  const handleGetSelectedRows = () => {
+    const selectedRowData = table.getSelectedRowModel().rows.map(row => row.original);
+    setSelectedRow(selectedRowData);
+    setSelectedRows(selectedRowData);
+
+  };
 
   return (
     <>  
-        <div className="flex items-center py-4 gap-3">
+        <div className="flex items-center py-4">
             <Input
             placeholder="Search item name..."
             value={(table.getColumn("item_name")?.getFilterValue() as string) ?? ""}
@@ -69,14 +78,12 @@ export function DataTable<TData, TValue>({
             }
             className="max-w mr-2"
             />
-            <CreateStockIn />
-            {isLoading ? (
-              <Loader2 className='animate-spin' />
-            ) : (
-              <Button className="text-white" variant='secondary' asChild>
-                <Link href="/storage/openingBalance" onClick={() => {setIsLoading(true)}}><NotebookPenIcon className="mr-2 h-6 w-6" />Opening Balance</Link>
+            <DrawerClose asChild>
+              <Button className='text-white max-w-[200px]' type='submit' onClick={handleGetSelectedRows}>
+                <CheckCircle2 className="mr-2 capitalize"/> SUBMIT
               </Button>
-            )}
+            </DrawerClose>
+            
         </div>
         <div className="rounded-md border">
         <Table>
@@ -124,6 +131,22 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <DataTablePagination table={table} />
+        {/* <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button> */}
       </div>
     </>
   )

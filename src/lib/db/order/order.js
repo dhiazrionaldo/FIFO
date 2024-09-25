@@ -112,7 +112,7 @@ export async function createLoungeOrder(items){
         return  { message: 'Lounge order and transaction history created successfully' };
     } catch (error) {
         console.log(error)
-        throw new Error('Error fetching items: ' + error);
+        throw new Error('Error create lounge order: ' + error);
     }
 }
 
