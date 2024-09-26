@@ -14,10 +14,8 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
 import toast from 'react-hot-toast';
-import getStockInData from "@/app/storage/page"
 
 export const maxDuration = 60;
 
@@ -51,11 +49,7 @@ interface ITEM {
   modified_datetime: string;
 }
 
-interface CreateStockInProps {
-  onSave: () => void; // Add this prop for the callback
-}
-
-export function CreateStockIn({ onSave }: CreateStockInProps) {
+export function CreateStockIn() {
   const { user } = useUser();
   const username = user?.username;
   const [item_id, setItemid] = useState('');
@@ -121,16 +115,13 @@ export function CreateStockIn({ onSave }: CreateStockInProps) {
       created_by: username!,
       price: unit_price
     };
+
     setLoading(true);
     try {
-      if(qty < storage_minimum_stock){
-        toast.error('Can not add stock that qty below minimum stocks!')
-      }else {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, data);
-        toast.success('Success Add Stock!');
-        onSave();
-      }
       
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/order`, data);
+      toast.success('Success Add Stock!');
+      window.location.reload();
     } catch (error) {
       toast.error('Failed to Add Stock!');
       console.error(error);
@@ -236,9 +227,7 @@ export function CreateStockIn({ onSave }: CreateStockInProps) {
           {isLoading ? (
             <Button disabled><Loader2 className="h-4 w-4 animate-spin" /></Button>
           ) : (
-            <SheetClose asChild>
-              <Button className="text-white" type="submit" onClick={handleSave}>Save changes</Button>
-            </SheetClose>
+            <Button className="text-white" type="submit" onClick={handleSave}>Save changes</Button>
           )}
         </SheetFooter>
       </SheetContent>

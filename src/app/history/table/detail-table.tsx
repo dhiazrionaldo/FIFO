@@ -98,6 +98,12 @@ export function DetailTable ({ kode_sku, from, to }: DetailTableProps){
                                         {detail.transaction_type == 'STORAGE IN' && (
                                             <div><Badge className="text-white">{detail.transaction_type}</Badge></div>
                                         )}
+                                        {detail.transaction_type == 'STORAGE OPENING BALANCE' && (
+                                            <div><Badge className="text-white bg-cyan-700">{detail.transaction_type}</Badge></div>
+                                        )}
+                                        {detail.transaction_type == 'STORAGE CLOSING BALANCE' && (
+                                            <div><Badge className="text-white bg-red-700">{detail.transaction_type}</Badge></div>
+                                        )}
                                         </>
                                     </TableCell>
                                     <TableCell>{detail.before_qty}</TableCell>

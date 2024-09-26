@@ -14,6 +14,7 @@ import {
   ListOrderedIcon,
   LogOut,
   Mail,
+  Martini,
   MoreHorizontal,
   Package,
   Package2,
@@ -23,6 +24,7 @@ import {
   TimerReset,
   User,
   Users,
+  Warehouse,
 } from 'lucide-react';
 import { SidebarDesktop } from './sidebar-desktop';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -37,8 +39,8 @@ import { SidebarMobile } from './sidebar-mobile';
 const sidebarItems: SidebarItems = {
   links: [
     { label: 'Dashboard', href: '/home', icon: LineChartIcon },
-    { label: 'Storage Stocks', href: '/storage', icon: Package },
-    { label: 'Lounge Stocks', href: '/lounge', icon: PackageOpen },
+    { label: 'Storage Stocks', href: '/storage', icon: Warehouse },
+    { label: 'Lounge Stocks', href: '/lounge', icon: Martini },
     { label: 'Order', href: '/order', icon: ListOrderedIcon },
     {
       href: '/history',

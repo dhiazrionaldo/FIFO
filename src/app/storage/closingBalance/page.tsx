@@ -20,7 +20,7 @@ const StorageOpeningBalancePage = () => {
   const [formattedRows, setFormattedRows] = useState(selectedRows);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [topQty, setTopQty] = useState(''); 
-  // const [exceedIndex, setExceedIndex] = useState<number | null>(null);// Track the index of the exceeded card
+  const [exceedIndex, setExceedIndex] = useState<number | null>(null);// Track the index of the exceeded card
   const { user } = useUser();
   const username = user?.username;
   const router = useRouter();
@@ -28,16 +28,16 @@ const StorageOpeningBalancePage = () => {
   
 
   // Submit Order
-  async function submitOpeningBalance() {
+  async function submitClosingBalance() {
     let isExceed = false;
     setLoading(true);
     // Validate topQty with storage qty before submission
     const updatedRows = formattedRows.map((row, index) => {
-      // if (parseInt(topQty) > row.qty) {
-      //   toast.error(`Order quantity for ${row.item_name} exceeds available stock!`);
-      //   setExceedIndex(index); // Set the exceeded card index for animation
-      //   isExceed = true;
-      // }
+      if (parseInt(topQty) > row.qty) {
+        toast.error(`Order quantity for ${row.item_name} exceeds available stock!`);
+        setExceedIndex(index); // Set the exceeded card index for animation
+        isExceed = true;
+      }
 
 
       return {
@@ -52,20 +52,20 @@ const StorageOpeningBalancePage = () => {
         setLoading(false); 
         return
     };
-    
+
     // Submit the order if no validation errors
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage/openingBalance`, updatedRows)
+      await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage/closingBalance`, updatedRows)
         .then(() => {
           setLoading(false);
-          toast.success('Success Update Opening Balance!');
+          toast.success('Success Update Closing Balance!');
         })
         .finally(() => {
-          router.push('/storage');
+          router.push('/storage'); 
           clearSelectedRows(); 
         });
     } catch (error) {
-      toast.error('Failed to add Order! Please try again later.');
+      toast.error('Failed! Please try again later.');
       console.log(error);
     }
   }
@@ -95,12 +95,12 @@ const StorageOpeningBalancePage = () => {
       <div className='flex flex-row gap-3'>
         <Link href='/storage'>
           <Button variant='outline' onClick={() => {
-            clearSelectedRows(); 
+             clearSelectedRows(); 
           }}>
             <ArrowLeft className='gap-2' />Back
           </Button>
         </Link>
-        <h1 className="text-3xl font-semibold capitalize">Storage Opening Balance</h1>
+        <h1 className="text-3xl font-semibold capitalize">Storage Closing Balance</h1>
       </div>
       
       <div className="mt-10 justify-between items-center">
@@ -129,7 +129,7 @@ const StorageOpeningBalancePage = () => {
           {isLoading ? (
             <Loader2 className='animate-spin h-5 w-5'/>
           ) : (
-            <Button className='text-white gap-3' onClick={submitOpeningBalance}>
+            <Button className='text-white gap-3' onClick={submitClosingBalance}>
                 <ListCheck className='w-5 h-5' />SUBMIT
             </Button>
           )}
@@ -140,7 +140,7 @@ const StorageOpeningBalancePage = () => {
           formattedRows.map((row, index) => (
             <Card 
               key={index}
-              className={`mx-2 my-2 py-4 px-4 text-white w-full`}
+              className={`mx-2 my-2 py-4 px-4 text-white w-full ${index === exceedIndex ? 'animate-pulse duration-90 bg-gray-700 text-white exceed-card' : ''}`}
             >
               <CardTitle className='mb-4 text-xl font-bold'>SKU No : {row.kode_sku}</CardTitle>
               <CardContent className="grid grid-cols-2 gap-6">

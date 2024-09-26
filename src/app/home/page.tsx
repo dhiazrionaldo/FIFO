@@ -38,6 +38,10 @@ export default function HomePage(){ const today = new Date();
     const [loading, setLoading] = useState(false);
     const [expenseStorage, setExpenseStorage] = useState('');
     const [expenseLounge, setExpenseLounge] = useState('');
+    const [waistedExpenseLounge, setWaistedExpenseLounge] = useState('');
+    const [waistedExpenseStorage, setWaistedExpenseStorage] = useState('');
+    const [waistedLounge, setWaistedLounge] = useState(0);
+    const [waistedStorage, setWaistedStorage] = useState(0);
     const [stockLounge, setStockLounge] = useState(0);
     const [stockStorage, setStockStorage] = useState(0);
     const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -55,8 +59,6 @@ export default function HomePage(){ const today = new Date();
                 to: dateRange?.to?.toISOString(),
             };
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalExpense`, { params });
-    
-            console.log(res.data.items);
     
             // Loop through the response array to set values based on the source field
             res.data.items.forEach((item: { source: string; total_price: number }) => {
@@ -96,8 +98,6 @@ export default function HomePage(){ const today = new Date();
             };
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalStocks`, { params });
     
-            console.log(res.data.items);
-    
             // Loop through the response array to set values based on the source field
             res.data.items.forEach((item: { source: string; total_qty: number }) => {
                 const { source, total_qty } = item;
@@ -116,9 +116,81 @@ export default function HomePage(){ const today = new Date();
         }
     }; 
 
+    const GetTotalWaisted = async () => {
+        if (!dateRange?.from || !dateRange?.to) {
+            alert("Please select a date range");
+            return;
+        }
+    
+        setLoading(true);
+        try {
+            const params = {
+                from: dateRange?.from?.toISOString(),
+                to: dateRange?.to?.toISOString(),
+            };
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalWaisted`, { params });
+    
+            // Loop through the response array to set values based on the source field
+            res.data.items.forEach((item: { source: string; total_qty: number }) => {
+                const { source, total_qty } = item;
+    
+                if (source === 'STORAGE') {
+                    setWaistedStorage(total_qty);
+                } else if (source === 'LOUNGE') {
+                    setWaistedLounge(total_qty);
+                }
+            });
+    
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setLoading(false);
+        }
+    }; 
+
+    const GetTotalWaistedExpense = async () => {
+        if (!dateRange?.from || !dateRange?.to) {
+            alert("Please select a date range");
+            return;
+        }
+    
+        setLoading(true);
+        try {
+            const params = {
+                from: dateRange?.from?.toISOString(),
+                to: dateRange?.to?.toISOString(),
+            };
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalWaistedExpense`, { params });
+    
+            // Loop through the response array to set values based on the source field
+            res.data.items.forEach((item: { source: string; total_price: number }) => {
+                const { source, total_price } = item;
+    
+                const formattedCurrency = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                }).format(total_price);
+    
+                if (source === 'STORAGE') {
+                    setWaistedExpenseStorage(formattedCurrency);
+                } else if (source === 'LOUNGE') {
+                    setWaistedExpenseLounge(formattedCurrency);
+                }
+            });
+    
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setLoading(false);
+        }
+    };  
+
     useEffect(() => {
         GetTotalExpense();
         GetTotalStock();
+        GetTotalWaisted();
+        GetTotalWaistedExpense();
     }, []);
 
     if(isDesktop){
@@ -162,12 +234,45 @@ export default function HomePage(){ const today = new Date();
                             <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
+                                Waisted Storage Expense
+                                </CardTitle>
+                                <Warehouse className="w-5 h-5"/>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedExpenseStorage}</div>
+                            </CardContent>
+                            </Card>
+                            <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
                                 Lounge Expense
                                 </CardTitle>
                                 <Martini className="w-5 h-5"/>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :expenseLounge}</div>
+                            </CardContent>
+                            </Card>
+                            <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                Waisted Lounge Expense
+                                </CardTitle>
+                                <Martini className="w-5 h-5"/>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedExpenseLounge}</div>
+                            </CardContent>
+                            </Card>
+                            <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                Waisted Storage 
+                                </CardTitle>
+                                <PackageOpen className="h-5 w-5" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedStorage}</div>
                             </CardContent>
                             </Card>
                             <Card>
@@ -182,6 +287,17 @@ export default function HomePage(){ const today = new Date();
                             <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">
+                                Waisted Lounge 
+                                </CardTitle>
+                                <PackageOpen className="h-5 w-5" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedLounge}</div>
+                            </CardContent>
+                            </Card>
+                            <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
                                 Lounge Qty
                                 </CardTitle>
                                 <PackageOpen className="h-5 w-5" />
@@ -190,6 +306,7 @@ export default function HomePage(){ const today = new Date();
                                 <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :stockLounge}</div>
                             </CardContent>
                             </Card>
+                            
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                             <Card className="col-span-4">
@@ -239,7 +356,18 @@ export default function HomePage(){ const today = new Date();
                         <Warehouse className="w-5 h-5"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> : expenseStorage}</div>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :expenseStorage}</div>
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                        Waisted Storage Expense
+                        </CardTitle>
+                        <Warehouse className="w-5 h-5"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedExpenseStorage}</div>
                     </CardContent>
                     </Card>
                     <Card>
@@ -250,7 +378,29 @@ export default function HomePage(){ const today = new Date();
                         <Martini className="w-5 h-5"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> : expenseLounge}</div>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :expenseLounge}</div>
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                        Waisted Lounge Expense
+                        </CardTitle>
+                        <Martini className="w-5 h-5"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedExpenseLounge}</div>
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                        Waisted Storage 
+                        </CardTitle>
+                        <PackageOpen className="h-5 w-5" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedStorage}</div>
                     </CardContent>
                     </Card>
                     <Card>
@@ -259,7 +409,18 @@ export default function HomePage(){ const today = new Date();
                         <Boxes className="w-5 h-5" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> : stockStorage}</div>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :stockStorage}</div>
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                        Waisted Lounge 
+                        </CardTitle>
+                        <PackageOpen className="h-5 w-5" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :waistedLounge}</div>
                     </CardContent>
                     </Card>
                     <Card>
@@ -270,7 +431,7 @@ export default function HomePage(){ const today = new Date();
                         <PackageOpen className="h-5 w-5" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> : stockLounge}</div>
+                        <div className="text-2xl font-bold">{loading ? <Loader2 className="animate-spin"/> :stockLounge}</div>
                     </CardContent>
                     </Card>
                 </div>

@@ -103,6 +103,8 @@ export const columns: ColumnDef<stockIn>[] = [
         return <div><Badge className='text-white bg-green-700'>{status}</Badge></div>
       } else if(status =='LOUNGE ORDER'){
         return <div><Badge className='text-white bg-yellow-500'>{status}</Badge></div>
+      } else if(status =='STORAGE CLOSING BALANCE'){
+        return <div><Badge className='text-white bg-red-700'>{status}</Badge></div>
       }
       else{
         return <div><Badge className='text-white'>{status}</Badge></div>

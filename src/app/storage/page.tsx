@@ -32,6 +32,11 @@ export default function StoragePage() {
   const [inputQty, setInputQty] = useState(0); // To handle qty input
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
+  const refreshData = () => {
+    getStockInData();  // Fetch the latest data
+    getOrderList();    // Fetch the latest orders
+  };
+
   const getStockInData = async () => {
     if (!dateRange?.from || !dateRange?.to) {
       alert("Please select a date range");
@@ -129,7 +134,7 @@ export default function StoragePage() {
               {loading ? (
                 <Loader2 className="h-10 w-10 text-blue-600 animate-spin mx-auto" />
               ) : (
-                <DataTable columns={columns} data={data} />
+                <DataTable refreshData={refreshData} columns={columns} data={data} />
               )}
             </div>
           </div>
@@ -171,26 +176,6 @@ export default function StoragePage() {
                       </div>
                       <div className="ml-auto font-medium text-xl">{row.qty}</div>
                     </div>
-                  // </div>
-                  // <div
-                  //   key={index}
-                  //   onClick={() => handleRowClick(row)}
-                  //   className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                  // >
-                  //   <Circle className="h-5 w-5" />
-                  //   <div className="space-y-1">
-                  //     <p className="text-sm font-medium leading-none">Kode SKU</p>
-                  //     <p className="text-sm text-muted-foreground">{row.kode_sku}</p>
-                  //   </div>
-                  //   <div className="space-y-1">
-                  //     <p className="text-sm font-medium leading-none">Item Name</p>
-                  //     <p className="text-sm text-muted-foreground">{row.item_name}</p>
-                  //   </div>
-                  //   <div className="space-y-2">
-                  //     <p className="text-sm font-medium leading-none">Order Qty</p>
-                  //     <p className="text-sm text-muted-foreground">{row.qty}</p>
-                  //   </div>
-                  // </div>
                 ))
               ) : (
                 <Card>
@@ -326,7 +311,7 @@ export default function StoragePage() {
             {loading ? (
               <Loader2 className="h-10 w-10 text-blue-600 animate-spin mx-auto" />
             ) : (
-              <DataTable columns={columns} data={data} />
+              <DataTable refreshData={refreshData} columns={columns} data={data} />
             )}
           </div>
       </div>

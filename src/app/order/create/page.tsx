@@ -16,7 +16,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 const LoungeorderPage = () => {
-  const { selectedRows } = useSelectedRow();
+  const { selectedRows, clearSelectedRows } = useSelectedRow();
   const [formattedRows, setFormattedRows] = useState(selectedRows);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [topQty, setTopQty] = useState(''); 
@@ -61,6 +61,7 @@ const LoungeorderPage = () => {
           toast.success('Success Add Lounge Order!');
         })
         .finally(() => {
+          clearSelectedRows();
           router.push('/order');
         });
     } catch (error) {
@@ -93,7 +94,9 @@ const LoungeorderPage = () => {
     <div>
       <div className='flex flex-row gap-3'>
         <Link href='/order'>
-          <Button variant='outline'>
+          <Button variant='outline' onClick={() => {
+            clearSelectedRows();
+          }}>
             <ArrowLeft className='gap-2' />Back
           </Button>
         </Link>
