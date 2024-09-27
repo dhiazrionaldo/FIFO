@@ -300,7 +300,7 @@ export default function StoragePage() {
         </Dialog>
           <div className="grid items-start gap-2">
             <h1 className="text-xl md:text-3xl font-semibold capitalize">Storage</h1>
-            <div className="flex flex-col md:flex-row flex-center gap-2 m-3">
+            <div className="flex flex-col-sm md:flex-row flex-center gap-2 m-3">
               <DatePickerWithRange date={dateRange} setDate={setDateRange} />
               <Button className="text-white" onClick={getStockInData}>
                 {loading ? <Loader2 className="animate-spin" /> : <Search />}

@@ -6,6 +6,7 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 type SelectedRowContextsType = {
   selectedRows: any[];
   setSelectedRows: (rows: any[]) => void;
+  clearSelectedRows: () => void; 
 };
 
 // Create context
@@ -24,8 +25,12 @@ export const useSelectedRow = () => {
 export const SelectedRowProviders = ({ children }: { children: ReactNode }) => {
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
+  // Function to clear the selected rows
+  const clearSelectedRows = () => {
+    setSelectedRows([]); // Clear the array
+  };
   return (
-    <SelectedRowContexts.Provider value={{ selectedRows, setSelectedRows }}>
+    <SelectedRowContexts.Provider value={{ selectedRows, setSelectedRows, clearSelectedRows }}>
       {children}
     </SelectedRowContexts.Provider>
   );

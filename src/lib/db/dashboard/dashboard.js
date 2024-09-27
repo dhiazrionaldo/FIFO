@@ -106,3 +106,53 @@ export async function getTotalWaistedExpense(dateRange){
         throw new Error('Error fetching items: ' + error);
     }
 }
+
+export async function getStorageExpenseOverview(){
+    const pool = await poolPromise;
+
+    try {
+        const result = await pool.request()
+                                 .query(`
+                                        WITH Months AS (
+                                            SELECT 1 AS MonthNum
+                                            UNION ALL
+                                            SELECT 2
+                                            UNION ALL
+                                            SELECT 3
+                                            UNION ALL
+                                            SELECT 4
+                                            UNION ALL
+                                            SELECT 5
+                                            UNION ALL
+                                            SELECT 6
+                                            UNION ALL
+                                            SELECT 7
+                                            UNION ALL
+                                            SELECT 8
+                                            UNION ALL
+                                            SELECT 9
+                                            UNION ALL
+                                            SELECT 10
+                                            UNION ALL
+                                            SELECT 11
+                                            UNION ALL
+                                            SELECT 12
+                                        )
+                                        SELECT 
+                                            FORMAT(DATEADD(MONTH, M.MonthNum - 1, '1900-01-01'), 'MMMM') AS [month],
+                                            ISNULL(SUM(ss.total_price), 0) AS storage,
+                                            ISNULL(SUM(ls.total_price),0) AS lounge
+                                        FROM Months M
+                                        LEFT JOIN dbo.storage_stocks ss
+                                            ON M.MonthNum = MONTH(ss.date_in)
+                                        LEFT JOIN dbo.lounge_stocks ls
+                                            ON M.MonthNum = MONTH(ls.date_in)
+                                        GROUP BY M.MonthNum
+                                        ORDER BY M.MonthNum
+                                        `);
+        return result.recordset;
+    } catch (error) {
+        console.log(error);
+        throw new Error('Error' + error)   
+    }
+}

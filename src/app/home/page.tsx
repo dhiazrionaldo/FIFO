@@ -309,15 +309,15 @@ export default function HomePage(){ const today = new Date();
                             
                         </div>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                            <Card className="col-span-4">
+                            <Card className="col-span-5">
                             <CardHeader>
-                                <CardTitle>Overview</CardTitle>
+                                <CardTitle>Monthly Expense Overview</CardTitle>
                             </CardHeader>
                             <CardContent className="pl-2">
                                 <Overview />
                             </CardContent>
                             </Card>
-                            <Card className="col-span-3">
+                            {/* <Card className="col-span-3">
                             <CardHeader>
                                 <CardTitle>Recent Sales</CardTitle>
                                 <CardDescription>
@@ -325,9 +325,9 @@ export default function HomePage(){ const today = new Date();
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {/* <RecentSales /> */}
+                                <RecentSales />
                             </CardContent>
-                            </Card>
+                            </Card> */}
                         </div>
                         </TabsContent>
                     </Tabs>
@@ -444,7 +444,7 @@ export default function HomePage(){ const today = new Date();
                             <Overview />
                         </CardContent>
                         </Card>
-                        <Card className="col-span-3">
+                        {/* <Card className="col-span-3">
                         <CardHeader>
                             <CardTitle>Recent Sales</CardTitle>
                             <CardDescription>
@@ -452,9 +452,9 @@ export default function HomePage(){ const today = new Date();
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {/* <RecentSales /> */}
+                             <RecentSales /> 
                         </CardContent>
-                        </Card>
+                        </Card> */}
                     </div>
                 </div>
         </div>

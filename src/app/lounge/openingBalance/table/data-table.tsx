@@ -24,9 +24,11 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { CreateStockIn } from "./create-stockIn"
-import { CirclePlus, CircleXIcon, Loader2, PackageOpenIcon } from "lucide-react"
+import { CheckCircle2, CirclePlus, SaveIcon } from "lucide-react"
 import Link from "next/link"
 import { DataTablePagination } from "./data-table-pagination"
+import { DrawerClose } from "@/components/ui/drawer"
+import { useSelectedRow } from '@/app/lounge/selected-row-provider';
 
 export const maxDuration = 60;
 
@@ -41,8 +43,8 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [selectedRows, setSelectedRow] = React.useState<any[]>([]);
+  const { setSelectedRows } = useSelectedRow();
 
   const table = useReactTable({
     data,
@@ -58,10 +60,16 @@ export function DataTable<TData, TValue>({
         columnFilters,
     }
   })
+  const handleGetSelectedRows = () => {
+    const selectedRowData = table.getSelectedRowModel().rows.map(row => row.original);
+    setSelectedRow(selectedRowData);
+    setSelectedRows(selectedRowData);
+
+  };
 
   return (
-    <>
-        <div className="flex items-center py-4 gap-3">
+    <>  
+        <div className="flex items-center py-4">
             <Input
             placeholder="Search item name..."
             value={(table.getColumn("item_name")?.getFilterValue() as string) ?? ""}
@@ -70,34 +78,12 @@ export function DataTable<TData, TValue>({
             }
             className="max-w mr-2"
             />
-            {/* <CreateStockIn /> */}
-            {isLoading ? (
-              <Loader2 className='animate-spin' />
-            ) : (
-              <Button className="text-white" asChild>
-                <Link href="/order/create" onLoad={() => {setIsLoading(true)}}><CirclePlus className="mr-2" />Add new Order</Link>
+            <DrawerClose asChild>
+              <Button className='text-white max-w-[200px]' type='submit' onClick={handleGetSelectedRows}>
+                <CheckCircle2 className="mr-2 capitalize"/> SUBMIT
               </Button>
-            )}
-             {isLoading ? (
-              <Button className="text-white bg-green-700 hover:bg-green-500" disabled>
-                <Loader2 className="animate-spin mr-2 h-6 w-6" />Open Balance
-              </Button>
-              
-            ) : (
-              <Button className="text-white bg-green-700 hover:bg-green-500" asChild>
-                <Link href="/lounge/openingBalance" onClick={() => {setIsLoading(true)}}><PackageOpenIcon className="mr-2 h-6 w-6" />Open Balance</Link>
-              </Button>
-            )}
-            {loading ? (
-              <Button className="text-white bg-red-700 hover:bg-red-500" variant='secondary'  disabled>
-                <Loader2 className="animate-spin mr-2 h-6 w-6" />Close Balance
-              </Button>
-            ) : (
-              <Button className="text-white bg-red-700 hover:bg-red-500" variant='secondary' asChild>
-                <Link href="/lounge/closingBalance" onClick={() => {setLoading(true)}}><CircleXIcon className="mr-2 h-6 w-6" />Close Balance</Link>
-              </Button>
-            )}
-
+            </DrawerClose>
+            
         </div>
         <div className="rounded-md border">
         <Table>

@@ -15,6 +15,7 @@ import {
 import { EditStockIn } from "./edit-stockIn"
 import { DeleteStockIn } from "./delete-stockIn"
 import { EditStockOut } from "./edit-stockOut"
+import { Checkbox } from '@/components/ui/checkbox';
 
 export const maxDuration = 60;
 
@@ -38,6 +39,30 @@ export type stockIn = {
 
 export const columns: ColumnDef<stockIn>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     accessorKey: "item_name",
     header: ({column}) =>{
         return(
@@ -52,26 +77,13 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "category_name",
     header: "Category",
   },
-  
   {
     accessorKey: "kode_sku",
-    header: "SKU Code",
-  },
-  {
-    accessorKey: "opening_balance",
-    header: "Opening Balance",
+    header: "SKU",
   },
   {
     accessorKey: "qty",
     header: "Qty",
-  },
-  {
-    accessorKey: "closing_balance",
-    header: "Closing Balance",
-  },
-  {
-    accessorKey: "waisted_qty",
-    header: "Waisted Qty",
   },
   {
     accessorKey: "unit_price",
@@ -103,7 +115,7 @@ export const columns: ColumnDef<stockIn>[] = [
     accessorKey: "date_in",
     header: ({column}) =>{
       return(
-          <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "asc")}>
+          <Button variant="ghost" onClick={()=> column.toggleSorting(column.getIsSorted() === "desc")}>
               Transaction Date
               <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
@@ -128,7 +140,7 @@ export const columns: ColumnDef<stockIn>[] = [
 
       return <div>{formattedDate}</div>
     }
-  },
+  },  
   // {
   //   accessorKey: "created_by",
   //   header: "Created By",
