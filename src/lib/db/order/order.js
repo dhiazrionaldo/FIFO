@@ -66,8 +66,6 @@ export async function getAllOrder(){
                                     ON b.category_id = c.id 
                                     WHERE a.status = 'ORDER'
                                     ORDER BY ISNULL(a.created_datetime, a.modified_datetime) DESC`);
-        
-                                    console.log(result.recordset)
         return result.recordset;
     } catch (error) {
         throw new Error('Error fetching items: ' + error);

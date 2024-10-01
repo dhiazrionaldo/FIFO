@@ -56,7 +56,7 @@ export default function StoragePage() {
         { 
           params, 
           headers: {
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'public, s-maxage=1'
           },
         }
       );
@@ -75,7 +75,7 @@ export default function StoragePage() {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/order/getAllOrderList`, 
         {
           headers: {
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'public, s-maxage=1'
           },
         });
       setOrder(res.data.items);
