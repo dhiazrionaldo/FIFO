@@ -74,7 +74,6 @@ export default function StoragePage() {
 
   useEffect(() => {
     getStockInData();
-    getOrderList();
   }, []);
 
   // Handle row click to open dialog with selected row data
