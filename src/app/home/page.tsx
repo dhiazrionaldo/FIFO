@@ -46,7 +46,7 @@ export default function HomePage(){ const today = new Date();
     const [stockStorage, setStockStorage] = useState(0);
     const isDesktop = useMediaQuery("(min-width: 768px)")
 
-    const GetTotalExpense = async () => {
+    const fetchData = async () => {
         if (!dateRange?.from || !dateRange?.to) {
             alert("Please select a date range");
             return;
@@ -58,21 +58,38 @@ export default function HomePage(){ const today = new Date();
                 from: dateRange?.from?.toISOString(),
                 to: dateRange?.to?.toISOString(),
             };
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalExpense`, { params });
+            const waistedExpense = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getSummary`, { params });
     
             // Loop through the response array to set values based on the source field
-            res.data.items.forEach((item: { source: string; total_price: number }) => {
-                const { source, total_price } = item;
+            waistedExpense.data.items.forEach((item: { source: string; total_price: number; total_qty: number; summary_type: string; }) => {
+                const { source, total_price, total_qty, summary_type } = item;
     
                 const formattedCurrency = new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     minimumFractionDigits: 0,
                 }).format(total_price);
-    
-                if (source === 'STORAGE') {
+                
+                if (source === 'STORAGE' && summary_type === 'WAISTED_EXPENSE') {
+                    setWaistedExpenseStorage(formattedCurrency);
+                } else if (source === 'LOUNGE' && summary_type === 'WAISTED_EXPENSE') {
+                    setWaistedExpenseLounge(formattedCurrency);
+                }
+                else if (source === 'STORAGE' && summary_type === 'WAISTED') {
+                    setWaistedStorage(total_qty);
+                } else if (source === 'LOUNGE' && summary_type === 'WAISTED') {
+                    setWaistedLounge(total_qty);
+                }
+                else if (source === 'STORAGE' && summary_type === 'STOCKS') {
+                    setStockStorage(total_qty);
+                } 
+                else if (source === 'LOUNGE' && summary_type === 'STOCKS') {
+                    setStockLounge(total_qty);
+                }
+                
+                else if (source === 'STORAGE' && summary_type === 'EXPENSE') {
                     setExpenseStorage(formattedCurrency);
-                } else if (source === 'LOUNGE') {
+                } else if (source === 'LOUNGE' && summary_type === 'EXPENSE') {
                     setExpenseLounge(formattedCurrency);
                 }
             });
@@ -82,115 +99,9 @@ export default function HomePage(){ const today = new Date();
             console.error("Error fetching data:", error);
             setLoading(false);
         }
-    };  
-    
-    const GetTotalStock = async () => {
-        if (!dateRange?.from || !dateRange?.to) {
-            alert("Please select a date range");
-            return;
-        }
-    
-        setLoading(true);
-        try {
-            const params = {
-                from: dateRange?.from?.toISOString(),
-                to: dateRange?.to?.toISOString(),
-            };
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalStocks`, { params });
-    
-            // Loop through the response array to set values based on the source field
-            res.data.items.forEach((item: { source: string; total_qty: number }) => {
-                const { source, total_qty } = item;
-    
-                if (source === 'STORAGE') {
-                    setStockStorage(total_qty);
-                } else if (source === 'LOUNGE') {
-                    setStockLounge(total_qty);
-                }
-            });
-    
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            setLoading(false);
-        }
-    }; 
-
-    const GetTotalWaisted = async () => {
-        if (!dateRange?.from || !dateRange?.to) {
-            alert("Please select a date range");
-            return;
-        }
-    
-        setLoading(true);
-        try {
-            const params = {
-                from: dateRange?.from?.toISOString(),
-                to: dateRange?.to?.toISOString(),
-            };
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalWaisted`, { params });
-    
-            // Loop through the response array to set values based on the source field
-            res.data.items.forEach((item: { source: string; total_qty: number }) => {
-                const { source, total_qty } = item;
-    
-                if (source === 'STORAGE') {
-                    setWaistedStorage(total_qty);
-                } else if (source === 'LOUNGE') {
-                    setWaistedLounge(total_qty);
-                }
-            });
-    
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            setLoading(false);
-        }
-    }; 
-
-    const GetTotalWaistedExpense = async () => {
-        if (!dateRange?.from || !dateRange?.to) {
-            alert("Please select a date range");
-            return;
-        }
-    
-        setLoading(true);
-        try {
-            const params = {
-                from: dateRange?.from?.toISOString(),
-                to: dateRange?.to?.toISOString(),
-            };
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getTotalWaistedExpense`, { params });
-    
-            // Loop through the response array to set values based on the source field
-            res.data.items.forEach((item: { source: string; total_price: number }) => {
-                const { source, total_price } = item;
-    
-                const formattedCurrency = new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0,
-                }).format(total_price);
-    
-                if (source === 'STORAGE') {
-                    setWaistedExpenseStorage(formattedCurrency);
-                } else if (source === 'LOUNGE') {
-                    setWaistedExpenseLounge(formattedCurrency);
-                }
-            });
-    
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            setLoading(false);
-        }
-    };  
-
+    }
     useEffect(() => {
-        GetTotalExpense();
-        GetTotalStock();
-        GetTotalWaisted();
-        GetTotalWaistedExpense();
+       fetchData()
     }, []);
 
     if(isDesktop){
@@ -214,7 +125,7 @@ export default function HomePage(){ const today = new Date();
                         </TabsList>
                         <div className="flex flex-col md:flex-row flex-center gap-2 m-3">
                             <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-                            <Button className="text-white" onClick={GetTotalExpense}>
+                            <Button className="text-white" onClick={fetchData}>
                                 {loading ? <Loader2 className="animate-spin" /> : <Search />}
                             </Button>
                         </div>
@@ -343,7 +254,7 @@ export default function HomePage(){ const today = new Date();
             <div className="mt-3 justify-between">
                 <div className="flex flex-col md:flex-row flex-center gap-2 m-3">
                     <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-                    <Button className="text-white" onClick={GetTotalExpense}>
+                    <Button className="text-white" onClick={fetchData}>
                         {loading ? <Loader2 className="animate-spin" /> : <Search />}
                     </Button>
                 </div>

@@ -1,4 +1,4 @@
-import {getTotalStock} from '@/lib/db/dashboard/dashboard' 
+import {getSummary} from '@/lib/db/dashboard/dashboard' 
 import { NextResponse } from 'next/server'
 
 export const maxDuration = 60;
@@ -12,7 +12,7 @@ export async function GET(req){
         if (!from || !to) {
           return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
         }
-        const items = await getTotalStock({from, to});
+        const items = await getSummary({from, to});
 
         return NextResponse.json({items}, {status:200});   
     } catch (error) {
