@@ -23,31 +23,9 @@ import { useEffect, useState } from "react";
 
 export const description = "Lounge Expense Overview"
 
-// const chartData = [
-//   { month: "January", storage: 186, lounge: 80 },
-//   { month: "February", storage: 305, lounge: 200 },
-//   { month: "March", storage: 237, lounge: 120 },
-//   { month: "April", storage: 73, lounge: 190 },
-//   { month: "May", storage: 209, lounge: 130 },
-//   { month: "June", storage: 214, lounge: 140 },
-//   { month: "July", storage: 214, lounge: 140 },
-//   { month: "August", storage: 214, lounge: 140 },
-//   { month: "September", storage: 214, lounge: 140 },
-//   { month: "October", storage: 214, lounge: 140 },
-//   { month: "November", storage: 214, lounge: 140 },
-//   { month: "December", storage: 214, lounge: 140 },
-// ]
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
 
-// let chartData: any[] | undefined = []
-// async function getStorageExpenseOverview (){
-//   try {
-//     const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/dashboard/getStorageExpenseOverview`)
-//     chartData = res.data.items;
-//   } catch (error) {
-//     console.log('error: '+error);
-//     toast.error('Error fetching chart!')
-//   }
-// }
 const chartConfig = {
   storage: {
     label: "Storage",

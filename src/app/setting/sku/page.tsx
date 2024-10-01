@@ -3,6 +3,7 @@ import axios from 'axios'
 import { DataTable } from "./table/data-table";
 import {CreateSKU} from "./table/create-sku"
 
+export const fetchCache = 'force-no-store';
 export const maxDuration = 60;
 
 async function getSKUData(){

@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2, LogIn } from "lucide-react";
 import {auth} from "@clerk/nextjs/server"
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 export default async function Home() {
 
   const {userId} = await auth();

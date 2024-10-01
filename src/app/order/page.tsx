@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { addDays, format } from "date-fns"; 
 import { Loader2, Search } from "lucide-react";
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 export default function LoungePage(){
     // Set initial date range to the current date
   const today = new Date();

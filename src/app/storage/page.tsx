@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { useMediaQuery } from 'usehooks-ts';
 
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 export default function StoragePage() {
   const today = new Date();
   const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);

@@ -2,6 +2,9 @@
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 // Define the type for selected rows
 type SelectedRowContextsType = {
   selectedRows: any[];

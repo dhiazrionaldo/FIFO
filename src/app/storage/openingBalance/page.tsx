@@ -15,6 +15,9 @@ import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 const StorageOpeningBalancePage = () => {
   const { selectedRows, clearSelectedRows } = useSelectedRow();
   const [formattedRows, setFormattedRows] = useState(selectedRows);

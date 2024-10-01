@@ -31,6 +31,9 @@ import { columns } from "@/app/lounge/openingBalance/table/columns";
 import { Loader2, SaveIcon } from "lucide-react";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 export function LoungeDrawerDialog() {
   const [open, setOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")

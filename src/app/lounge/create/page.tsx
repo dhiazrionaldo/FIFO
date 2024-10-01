@@ -16,6 +16,9 @@ import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
 import { redirect, useRouter } from 'next/navigation'
 
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
+
 const LoungeorderPage = () => {
     const { selectedRows } = useSelectedRow();
     const [formattedRows, setFormattedRows] = useState(selectedRows);

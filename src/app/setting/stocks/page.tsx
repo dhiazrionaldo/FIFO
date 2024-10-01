@@ -6,6 +6,7 @@ import { DataTable } from "./table/data-table";
 import {CreateStockMaster} from "./table/create-stock-master"
 import { useEffect, useState } from "react";
 
+export const fetchCache = 'force-no-store';
 export const maxDuration = 60;
 
 export default async function settingItemPage() {

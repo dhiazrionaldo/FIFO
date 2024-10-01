@@ -27,7 +27,8 @@ import { Boxes, Loader2, Martini, PackageOpen, Search, Warehouse } from "lucide-
 import { Overview } from "./cost-overview";
 import { useMediaQuery } from 'usehooks-ts';
 
-
+export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
 
 export default function HomePage(){ const today = new Date();
     const firstDate = new Date(today.getFullYear(), today.getMonth(), 1);
