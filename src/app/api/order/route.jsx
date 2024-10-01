@@ -2,6 +2,7 @@ import {getLoungeOrder, createLoungeOrder, editStockIn, deleteLoungeOrder, editS
 import { NextResponse } from 'next/server'
 
 export const maxDuration = 60;
+export const fetchCache = 'force-no-store';
 
 export async function GET(req){
     try {
@@ -13,7 +14,18 @@ export async function GET(req){
           return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
         }
         const items = await getLoungeOrder({from, to});
-        return NextResponse.json({items}, {status:200});   
+        return NextResponse.json(
+            {items}, 
+            {status:200}, 
+            {
+                status: 200,
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Expires': '0',
+                    'Pragma': 'no-cache'
+                }
+            }
+        );   
     } catch (error) {
         console.log(error)
         return NextResponse.json({error: error.messages}, {status: 500});

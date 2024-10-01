@@ -1,5 +1,8 @@
 import {getAllStorage} from '@/lib/db/storage/storage'
 import { NextResponse } from 'next/server'
+
+export const fetchCache = 'force-no-store';
+
 export async function GET(req){
     try {
         const items = await getAllStorage();

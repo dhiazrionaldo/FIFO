@@ -197,6 +197,7 @@ export async function deliverOrder(item) {
                       .query(`UPDATE dbo.lounge_stocks 
                               SET qty = @qty, 
                                   total_price = (@unit_price * @qty), 
+                                  date_in = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time',
                                   modified_by = @modified_by, 
                                   modified_datetime = SYSDATETIMEOFFSET() AT TIME ZONE 'SE Asia Standard Time'
                               WHERE storage_id = @storage_id`);
