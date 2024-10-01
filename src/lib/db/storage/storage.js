@@ -36,6 +36,7 @@ export async function getAllStorage(){
                                          ON a.item_id = c.id
                                          INNER JOIN dbo.sku_category_master AS b
                                          ON c.category_id  = b.id
+                                         WHERE a.qty > 0
                                          ORDER BY ISNULL(a.created_datetime, a.modified_datetime) DESC`);
         return result.recordset;
     } catch (error) {

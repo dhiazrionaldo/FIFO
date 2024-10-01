@@ -46,7 +46,6 @@ export default function StoragePage() {
       return;
     }
     
-    getOrderList();
     setLoading(true);
     try {
       const params = {
@@ -62,6 +61,7 @@ export default function StoragePage() {
         }
       );
       setData(res.data.items);
+      await getOrderList();
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -163,7 +163,12 @@ export default function StoragePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl md:text-3xl font-bold text-yellow-500">{order.length}</div>
+              <div className="text-2xl md:text-3xl font-bold text-yellow-500">
+              {loading ? (
+                <Loader2 className="h-10 w-10 text-blue-600 animate-spin mx-auto" />
+              ) : (order.length)
+              }
+              </div>
               <p className="text-xs text-muted-foreground">Waiting to deliver to lounge</p>
             </CardContent>
           </Card>
@@ -173,6 +178,11 @@ export default function StoragePage() {
             <CardTitle>
               <h1 className="text-lg md:text-2xl font-semibold capitalize p-3">Lounge Order List</h1>
             </CardTitle>
+            {loading ? (
+              <CardContent>
+                <Loader2 className="h-10 w-10 text-blue-600 animate-spin mx-auto" />
+              </CardContent>
+              ) : (
             <CardContent>
               {order.length > 0 ? (
                 order.map((row, index) => (
@@ -199,6 +209,7 @@ export default function StoragePage() {
                 </Card>
               )}
             </CardContent>
+            )}
           </Card>
         </div>
 
