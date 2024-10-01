@@ -70,6 +70,10 @@ export const columns: ColumnDef<stockIn>[] = [
     header: "Closing Balance",
   },
   {
+    accessorKey: "waisted_qty",
+    header: "Waisted Qty",
+  },
+  {
     accessorKey: "unit_price",
     header: "Unit Price",
     cell: ({row}) =>{

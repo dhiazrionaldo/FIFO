@@ -11,7 +11,7 @@ export async function getLoungeData(dateRange){
                                  .input('startDate', sql.DateTime, from)
                                  .input('endDate', sql.DateTime, to)
                                  .query(`
-                                         SELECT a.id, a.item_id, c.item_name, c.category_id, d.category_name, a.qty, a.opening_balance, a.closing_balance,
+                                         SELECT a.id, a.item_id, c.item_name, c.category_id, d.category_name, a.qty, a.opening_balance, a.closing_balance, a.waisted_qty
                                             a.date_in, a.created_by, c.kode_sku,
                                                 a.created_datetime, ISNULL(a.modified_by, a.created_by) AS modified_by, ISNULL(a.modified_datetime, a.created_datetime) AS modified_datetime, a.storage_id, a.total_price, c.price AS unit_price
                                          FROM dbo.[lounge_stocks] AS a
