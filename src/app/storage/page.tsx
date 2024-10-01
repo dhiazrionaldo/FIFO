@@ -53,7 +53,14 @@ export default function StoragePage() {
         from: dateRange?.from?.toISOString(),
         to: dateRange?.to?.toISOString(),
       };
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, { params });
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/storage`, 
+        { 
+          params, 
+          headers: {
+            'Cache-Control': 'no-cache'
+          },
+        }
+      );
       setData(res.data.items);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -65,7 +72,12 @@ export default function StoragePage() {
   async function getOrderList() {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/order/getAllOrderList`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/order/getAllOrderList`, 
+        {
+          headers: {
+            'Cache-Control': 'no-cache'
+          },
+        });
       setOrder(res.data.items);
     } catch (error) {
       toast.error("Error Get Data !");
