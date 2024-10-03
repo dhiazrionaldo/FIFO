@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 
 export const maxDuration = 60;
 export const fetchCache = 'force-no-store';
+export const revalidate=0
 
 export async function GET(req){
     try {
